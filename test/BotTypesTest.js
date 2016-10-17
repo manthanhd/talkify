@@ -111,3 +111,57 @@ describe('TrainingDocument', function() {
         expect(trainingDocument.text).toBe('text');
     });
 });
+
+describe('Skill', function() {
+    const Skill = require('../lib/BotTypes').Skill;
+    it('throws TypeError when topic parameter is undefined', function(done) {
+        try {
+            new Skill();
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when topic parameter is not string', function(done) {
+        try {
+            new Skill([]);
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when skillFn parameter is undefined', function(done) {
+        try {
+            new Skill('', undefined);
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when skillFn parameter is not string', function(done) {
+        try {
+            new Skill('', []);
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('returns new Skill object when parameters are valid', function(done) {
+        const skillFn = function(context, req, res, next) {
+
+        };
+        var skill = new Skill('topic', skillFn);
+
+        expect(skill.topic).toBe('topic');
+        expect(skill.apply).toBe(skillFn);
+        done();
+    });
+});
