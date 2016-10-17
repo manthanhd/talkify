@@ -40,7 +40,9 @@ function mockClassifierFactory() {
 
 describe('Bot', function () {
     const BotTypes = require('../lib/BotTypes');
+    const SingleLineMessage = BotTypes.SingleLineMessage;
     const Skill = BotTypes.Skill;
+    const Message = BotTypes.Message;
     const Bot = require('../lib/Bot');
 
     beforeEach(function (done) {
@@ -201,5 +203,40 @@ describe('Bot', function () {
                 done();
             }
         });
-    })
+    });
+
+    describe('resolve', function () {
+        it("resolves multi sentence message into a multi message response", function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next()
+            }));
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next()
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi", function (err, messages) {
+                if (err) return done(err);
+
+                expect(messages).toBeA(Array);
+                expect(messages.length).toBe(2);
+                expect(messages[0]).toBeA(Message);
+                expect(messages[0].content).toBe('mytopic response');
+                expect(messages[1]).toBeA(Message);
+                expect(messages[1].content).toBe('myanothertopic response');
+                done();
+            });
+        });
+    });
 });
