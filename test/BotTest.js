@@ -39,6 +39,8 @@ function mockClassifierFactory() {
 }
 
 describe('Bot', function () {
+    const BotTypes = require('../lib/BotTypes');
+    const Skill = BotTypes.Skill;
     const Bot = require('../lib/Bot');
 
     beforeEach(function (done) {
@@ -109,5 +111,18 @@ describe('Bot', function () {
             expect(err).toBeA(TypeError);
             done();
         });
+    });
+
+    it('adds given skill', function (done) {
+        var bot = new Bot();
+
+        const fakeSkillFn = function (context, req, res, next) { };
+
+        const fakeSkill = new Skill('topic', fakeSkillFn);
+        bot.addSkill(fakeSkill);
+
+        const skills = bot.getSkills();
+        expect(skills.length).toBe(1);
+        done();
     });
 });
