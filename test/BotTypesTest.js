@@ -25,6 +25,41 @@ describe('Message', function() {
     });
 });
 
+describe('SingleLineMessage', function() {
+    const SingleLineMessage = require("../lib/BotTypes").SingleLineMessage;
+
+    it('creates a new instance of Message when passed valid parameters', function(done) {
+        var message = new SingleLineMessage('Hello World!');
+        expect(message).toExist();
+        expect(message.type).toBe('SingleLine');
+        expect(message.content).toBe('Hello World!');
+        done();
+    });
+});
+
+describe('MultiLineMessage', function() {
+    const MultiLineMessage = require("../lib/BotTypes").MultiLineMessage;
+
+    it("throws TypeError when initialised with content attribute as string", function(done) {
+        try {
+            new MultiLineMessage('');
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('creates a new instance of Message when passed valid parameters', function(done) {
+        var message = new MultiLineMessage(['Hello World!']);
+        expect(message).toExist();
+        expect(message.type).toBe('MultiLine');
+        expect(message.content.length).toBe(1);
+        expect(message.content[0]).toBe('Hello World!');
+        done();
+    });
+});
+
 describe('Correspondence', function() {
     const Message = require('../lib/BotTypes').Message;
     const Correspondence = require("../lib/BotTypes").Correspondence;

@@ -51,6 +51,7 @@ describe('Bot', function () {
     });
 
     afterEach(function (done) {
+        mockery.deregisterAll();
         mockery.disable();
         done();
     });
@@ -68,6 +69,16 @@ describe('Bot', function () {
             expect(mockClassifierFactoryInstance.newClassifier.calls.length).toBe(1);
             expect(mockClassifierFactoryInstance.newClassifier).toHaveBeenCalledWith(naturalMock, 'naive_bayes');
             done();
+        });
+
+        it('prefers passed in classifier over classifierPreference in config', function () {
+            var natural = require('natural');
+            var fakeClassifier = {fakeClassifer: 'myclassifier'};
+            var bot = new Bot({classifier: fakeClassifier, classifierPreference: 'naive_bayes'});
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toNotBeA(natural.BayesClassifier);
+            expect(classifier).toBe(fakeClassifier);
         });
     });
 
@@ -164,7 +175,7 @@ describe('Bot', function () {
                 done();
             });
         });
-    })
+    });
 
     describe('addSkill', function () {
 
@@ -237,6 +248,134 @@ describe('Bot', function () {
                 expect(messages[1].content).toBe('myanothertopic response');
                 done();
             });
+        });
+
+        it('saves context by correspondance id', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var contextStore = {
+                put: function (id, context, callback) {
+                    return callback(undefined, context);
+                },
+
+                get: function (id, callback) {
+                    return callback(undefined, undefined);
+                }
+            };
+
+            var contextStore_putSpy = expect.spyOn(contextStore, 'put').andCallThrough();
+            var contextStore_getSpy = expect.spyOn(contextStore, 'get').andCallThrough();
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next()
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next()
+            }));
+
+            var bot = new Bot({contextStore: contextStore});
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi", function (err, messages) {
+                if (err) return done(err);
+
+                expect(contextStore_putSpy).toHaveBeenCalled();
+                expect(contextStore_getSpy).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it('returns messages as well as error when failed to memorize context', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var contextStore = {
+                put: function (id, context, callback) {
+                    return callback(new Error("hurr durr i failed to memorize context"), context);
+                },
+
+                get: function (id, callback) {
+                    return callback(undefined, undefined);
+                }
+            };
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next()
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next()
+            }));
+
+            var bot = new Bot({contextStore: contextStore});
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi", function (err, messages) {
+                expect(err).toExist();
+                expect(err.message).toBe('hurr durr i failed to memorize context');
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(2);
+                done();
+            });
+        });
+    });
+
+    describe('getContextStore', function () {
+        const ContextStore = require('../lib/ContextStore');
+        it('gets context store', function () {
+            var bot = new Bot();
+            var contextStore = bot.getContextStore();
+            expect(contextStore).toExist();
+            expect(contextStore).toBeA(ContextStore);
+        });
+
+        it('gets passed in context store', function () {
+            var fakeContextStore = {
+                put: function () {
+                }, get: function () {
+                }, remove: function () {
+                }
+            };
+            var bot = new Bot({contextStore: fakeContextStore});
+            var contextStore = bot.getContextStore();
+            expect(contextStore).toExist();
+            expect(contextStore).toNotBeA(ContextStore);
+            expect(contextStore).toBe(fakeContextStore);
+        });
+    });
+
+    describe('getClassifier', function () {
+        it('gets initialised default LogisticRegression classifier', function () {
+            var natural = require('natural');
+            var bot = new Bot();
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toBeA(natural.LogisticRegressionClassifier);
+        });
+
+        it('gets passed in classifier', function () {
+            var natural = require('natural');
+            var fakeClassifier = {myclassifier: 'classifier'};
+            var bot = new Bot({classifier: fakeClassifier});
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toNotBeA(natural.LogisticRegressionClassifier);
+            expect(classifier).toBe(fakeClassifier);
         });
     });
 });
