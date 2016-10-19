@@ -292,6 +292,47 @@ describe('Bot', function () {
                 done();
             });
         });
+
+        it('returns messages as well as error when failed to memorize context', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var contextStore = {
+                put: function (id, context, callback) {
+                    return callback(new Error("hurr durr i failed to memorize context"), context);
+                },
+
+                get: function (id, callback) {
+                    return callback(undefined, undefined);
+                }
+            };
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next()
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next()
+            }));
+
+            var bot = new Bot({contextStore: contextStore});
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi", function (err, messages) {
+                expect(err).toExist();
+                expect(err.message).toBe('hurr durr i failed to memorize context');
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(2);
+                done();
+            });
+        });
     });
 
     describe('getContextStore', function () {
