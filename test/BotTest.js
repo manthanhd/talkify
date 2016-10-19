@@ -51,6 +51,7 @@ describe('Bot', function () {
     });
 
     afterEach(function (done) {
+        mockery.deregisterAll();
         mockery.disable();
         done();
     });
@@ -68,6 +69,16 @@ describe('Bot', function () {
             expect(mockClassifierFactoryInstance.newClassifier.calls.length).toBe(1);
             expect(mockClassifierFactoryInstance.newClassifier).toHaveBeenCalledWith(naturalMock, 'naive_bayes');
             done();
+        });
+
+        it('prefers passed in classifier over classifierPreference in config', function() {
+            var natural = require('natural');
+            var fakeClassifier = {fakeClassifer: 'myclassifier'};
+            var bot = new Bot({classifier: fakeClassifier, classifierPreference: 'naive_bayes'});
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toNotBeA(natural.BayesClassifier);
+            expect(classifier).toBe(fakeClassifier);
         });
     });
 
@@ -164,7 +175,7 @@ describe('Bot', function () {
                 done();
             });
         });
-    })
+    });
 
     describe('addSkill', function () {
 
@@ -237,6 +248,45 @@ describe('Bot', function () {
                 expect(messages[1].content).toBe('myanothertopic response');
                 done();
             });
+        });
+    });
+
+    describe('getContextStore', function() {
+        const ContextStore = require('../lib/ContextStore');
+        it('gets context store', function() {
+            var bot = new Bot();
+            var contextStore = bot.getContextStore();
+            expect(contextStore).toExist();
+            expect(contextStore).toBeA(ContextStore);
+        });
+
+        it('gets passed in context store', function() {
+            var fakeContextStore = {put: function(){}, get: function() {}, remove: function() {}};
+            var bot = new Bot({contextStore: fakeContextStore});
+            var contextStore = bot.getContextStore();
+            expect(contextStore).toExist();
+            expect(contextStore).toNotBeA(ContextStore);
+            expect(contextStore).toBe(fakeContextStore);
+        });
+    });
+
+    describe('getClassifier', function() {
+        it('gets initialised default LogisticRegression classifier', function() {
+            var natural = require('natural');
+            var bot = new Bot();
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toBeA(natural.LogisticRegressionClassifier);
+        });
+
+        it('gets passed in classifier', function() {
+            var natural = require('natural');
+            var fakeClassifier = {myclassifier: 'classifier'};
+            var bot = new Bot({classifier: fakeClassifier});
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toNotBeA(natural.LogisticRegressionClassifier);
+            expect(classifier).toBe(fakeClassifier);
         });
     });
 });
