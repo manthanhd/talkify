@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "lint": "node ./node_modules/gulp/bin/gulp.js lint"
   },
   "keywords": [
     "bot",
@@ -22,7 +23,11 @@
   "devDependencies": {
     "coveralls": "^2.11.14",
     "expect": "^1.20.2",
+    "gulp": "^3.9.1",
+    "gulp-shell": "^0.5.2",
     "istanbul": "^0.4.5",
+    "jshint": "^2.9.3",
+    "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
     "mocha-lcov-reporter": "^1.2.0",
     "mockery": "^2.0.0",
