@@ -6,7 +6,7 @@ node_js:
 - '0.10'
 before_script:
 - npm install -g istanbul
-after_script:
+after_success:
 - npm run coveralls
 - npm run lint
 branches:
