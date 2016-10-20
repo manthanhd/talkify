@@ -14,8 +14,12 @@
     "ai",
     "nlp"
   ],
-  "author": "Manthan Dave <manthanhd@live.com>",
+  "author": "Manthan Dave <manthanhd@live.com> (https://www.manthanhd.com)",
   "license": "MIT",
+  "repository" : {
+    "type": "git",
+    "url": "https://github.com/manthanhd/botjs.git"
+  },
   "dependencies": {
     "async": "^2.1.2",
     "natural": "^0.4.0"
