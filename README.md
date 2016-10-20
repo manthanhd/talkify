@@ -1,4 +1,4 @@
-# botjs
+# Talkify
 Framework for developing chat bot applications.
 
 [![Build Status](https://travis-ci.org/manthanhd/botjs.svg?branch=master)](https://travis-ci.org/manthanhd/botjs) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/botjs/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/botjs?branch=master)
@@ -25,7 +25,7 @@ Make sure you have node and npm installed. As of now, this module has been teste
 Simply run:
 
 ```bash
-npm install --save botjs
+npm install --save talkify
 ```
 
 ## Code Tutorial
@@ -36,11 +36,11 @@ Require the main module, types and dependencies. The following command loads eve
 
 ```javascript
 // Core dependency
-const botjs = require('botjs');
-const Bot = botjs.Bot;
+const talkify = require('talkify');
+const Bot = talkify.Bot;
 
 // Types dependencies
-const BotTypes = botjs.BotTypes;
+const BotTypes = talkify.BotTypes;
 const Message = BotTypes.Message;
 const SingleLineMessage = BotTypes.SingleLineMessage;
 const MultiLineMessage = BotTypes.MultiLineMessage;
