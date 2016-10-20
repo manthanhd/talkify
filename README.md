@@ -1,7 +1,7 @@
 # Talkify
 Framework for developing chat bot applications.
 
-[![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/botjs.svg?branch=master)](https://travis-ci.org/manthanhd/botjs) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/botjs/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/botjs?branch=master)
+[![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/talkify.svg?branch=master)](https://travis-ci.org/manthanhd/talkify) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/talkify/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/talkify?branch=master)
 
 
 <!-- vim-markdown-toc GFM -->
