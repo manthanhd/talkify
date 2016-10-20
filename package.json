@@ -1,6 +1,6 @@
 {
-  "name": "botjs",
-  "version": "1.0.0",
+  "name": "talkify",
+  "version": "0.1.2",
   "description": "Framework for developing chat bot applications.",
   "main": "index.js",
   "scripts": {

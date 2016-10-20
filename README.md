@@ -1,4 +1,4 @@
-# botjs
+# Talkify
 Framework for developing chat bot applications.
 
 [![Build Status](https://travis-ci.org/manthanhd/botjs.svg?branch=master)](https://travis-ci.org/manthanhd/botjs) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/botjs/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/botjs?branch=master)
@@ -25,7 +25,7 @@ Make sure you have node and npm installed. As of now, this module has been teste
 Simply run:
 
 ```bash
-npm install --save botjs
+npm install --save talkify
 ```
 
 ## Code Tutorial
@@ -36,11 +36,11 @@ Require the main module, types and dependencies. The following command loads eve
 
 ```javascript
 // Core dependency
-const botjs = require('botjs');
-const Bot = botjs.Bot;
+const talkify = require('talkify');
+const Bot = talkify.Bot;
 
 // Types dependencies
-const BotTypes = botjs.BotTypes;
+const BotTypes = talkify.BotTypes;
 const Message = BotTypes.Message;
 const SingleLineMessage = BotTypes.SingleLineMessage;
 const MultiLineMessage = BotTypes.MultiLineMessage;
@@ -55,23 +55,25 @@ const TrainingDocument = BotTypes.TrainingDocument;
 Once the dependencies have been loaded, you can initialise the bot core.
 
 ```javascript
-const bot = new Bot()
+const bot = new Bot({classifierPreference: 'naive_bayes'});
 ```
 
-The Bot core also accepts a configuration object. Here you can pass in configuration switch values or alternate implementations for things like ContextStore and Classifier etc. We'll cover that in wiki afterwards.
+For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like ContextStore and Classifier etc. We'll cover that in wiki afterwards.
 
 ### Train
 
 Once Bot has been initialised, the first thing you should do is to train it. To train it one document at a time synchronously, you can use the `train` method:
 
 ```javascript
-bot.train('apple', 'I love apples');
-bot.train('apple', 'apples are amazing');
-bot.train('orange', 'I love oranges');
-bot.train('orange', 'oranges are amazing');
+bot.train('how_are_you', 'how are you');
+bot.train('how_are_you', 'how are you doing');
+bot.train('how_are_you', 'how is it going');
+bot.train('help', 'how can you help');
+bot.train('help', 'i need some help');
+bot.train('help', 'how could you assist me');
 ```
 
-The code above trains the bot to recognise the topic `apple` when the text looks like `I love apples` or `apples are amazing` but to recognise topic `orange` when the text looks like `I love oranges` or `oranges are amazing`. This is how you would train the bot. The first parameter in the `train` method is the topic that you want the bot to recognise and the second parameter is the text that you want the bot to classify as that topic. With enough training sets, the bot should get good at
+The code above trains the bot to recognise the topic `how_are_you` when the text looks like `how are you` or `how are you doing` as well as `how is it going` but to recognise topic `help` when the text looks like `how can you help` or `i need some help` as well as `how can you assist me`. This is how you would train the bot. The first parameter in the `train` method is the topic that you want the bot to recognise and the second parameter is the text that you want the bot to classify as that topic. With enough training sets, the bot should get good at
 classifying things correctly. Also, keep in mind that the bot does not do an exact lookup so in a sense it is learning from the sentences that it is being trained for.
 
 ### Add Skills
@@ -82,19 +84,26 @@ To add a skill, you need to create it first. A skill requires two things. A topi
 know that you are done processing. Here's what a skill looks like:
 
 ```javascript
-var appleAction = function(context, request, response, next) {
-    request.message = new SingleLineMessage('Hey you love apples!');
+var howAction = function(context, request, response, next) {
+    response.message = new SingleLineMessage('You asked: \"' + request.message.content + '\". I\'m doing well. Thanks for asking.');
     next();
 };
 
-var appleSkill = new Skill('apple', appleAction);
+var howSkill = new Skill('how_are_you', howAction);
+
+var helpAction = function(context, request, response, next) {
+    response.message = new SingleLineMessage('You asked: \"' + request.message.content + '\". I can tell you how I\'m doing if you ask nicely.');
+    next();
+};
+
+var helpSkill = new Skill('help', helpAction);
 ```
 
-Do the same for `orangeSkill` but replace `apple` with `orange`. Add the skill to the bot like so:
+Once you have defined some skills, you need to add them to the bot. Add the skill to the bot like so:
 
 ```javascript
-bot.addSkill(appleSkill);
-bot.addSkill(orangeSkill);
+bot.addSkill(howSkill);
+bot.addSkill(helpSkill);
 ```
 
 ### Resolve queries
@@ -109,10 +118,36 @@ var resolved = function(err, messages) {
     return console.log(messages);
 };
 
-bot.resolve(123, 'hey i love apples!', resolved);
+bot.resolve(123, 'Assistance required', resolved);
 ```
 
-Run it like a simple node file and it should print `Hey you love apples!` in the console.
+Run it like a simple node file and it should print the following in the console.
+
+```
+[ { type: 'SingleLine',
+    content: 'You asked: "Assistance required". I can tell you how I\'m doing if you ask nicely.' } ]
+```
+
+Try changing `bot.resolve` to this and notice the change in response.
+
+```javascript
+bot.resolve(456, 'How\'s it going?', resolved);
+```
+
+Let's ask two things at once. Change `bot.resolve` again to:
+
+```javascript
+bot.resolve(456, 'How\'s it going? Assistance required please.', resolved);
+```
+
+When you run your code, you should get two messages back:
+
+```javascript
+[ { type: 'SingleLine',
+    content: 'You asked: "How\'s it going? Assistance required please.". I\'m doing well. Thanks for asking.' },
+  { type: 'SingleLine',
+    content: 'You asked: "How\'s it going? Assistance required please.". I can tell you how I\'m doing if you ask nicely.' } ]
+```
 
 ## Extending bot
 
