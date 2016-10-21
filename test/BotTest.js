@@ -333,6 +333,64 @@ describe('Bot', function () {
                 done();
             });
         });
+
+        it('has access to sentence metadata when skill is processing the request', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var contextStore = {
+                put: function (id, context, callback) {
+                    return callback(undefined, context);
+                },
+
+                get: function (id, callback) {
+                    return callback(undefined, undefined);
+                }
+            };
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(request.sentence).toExist();
+                expect(request.sentence.current).toBe("Hello.");
+                expect(request.sentence.index).toBe(0);
+
+                expect(request.sentence.all).toExist();
+                expect(request.sentence.all.length).toBe(2);
+                expect(request.sentence.all[0]).toBe("Hello.");
+                expect(request.sentence.all[1]).toBe("Hi.");
+
+                response.message = new SingleLineMessage('mytopic response');
+                return next()
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(request.sentence).toExist();
+                expect(request.sentence.current).toBe("Hi.");
+                expect(request.sentence.index).toBe(1);
+
+                expect(request.sentence.all).toExist();
+                expect(request.sentence.all.length).toBe(2);
+                expect(request.sentence.all[0]).toBe("Hello.");
+                expect(request.sentence.all[1]).toBe("Hi.");
+
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next()
+            }));
+
+            var bot = new Bot({contextStore: contextStore});
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi.", function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(2);
+                done();
+            });
+        });
     });
 
     describe('getContextStore', function () {
