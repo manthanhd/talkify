@@ -391,6 +391,33 @@ describe('Bot', function () {
                 done();
             });
         });
+
+        it('resolves context from a previously saved context with the built in context store', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if(firstRun === true) {
+                    expect(context.something).toNotExist();
+                } else {
+                    expect(context.something).toExist();
+                }
+
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            bot.resolve(123, "Hello.", function(err, messages) {done();});
+            return bot.resolve(123, "Hello.", function (err, messages) {});
+        });
     });
 
     describe('getContextStore', function () {
