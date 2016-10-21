@@ -341,16 +341,6 @@ describe('Bot', function () {
                 return 'myanothertopic';
             });
 
-            var contextStore = {
-                put: function (id, context, callback) {
-                    return callback(undefined, context);
-                },
-
-                get: function (id, callback) {
-                    return callback(undefined, undefined);
-                }
-            };
-
             var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 expect(request.sentence).toExist();
                 expect(request.sentence.current).toBe("Hello.");
@@ -379,16 +369,56 @@ describe('Bot', function () {
                 return next();
             }));
 
-            var bot = new Bot({contextStore: contextStore});
+            var bot = new Bot();
             bot.addSkill(fakeMyTopicSkill);
             bot.addSkill(fakeMyAnotherTopicSkill);
 
             return bot.resolve(123, "Hello. Hi.", function (err, messages) {
-                expect(err).toNotExist();
+                return done();
+            });
+        });
 
-                expect(messages).toExist();
-                expect(messages.length).toBe(2);
-                done();
+        it('has access to topic metadata when skill is processing the request', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(request.skill).toExist();
+                expect(request.skill.current).toBe(fakeMyTopicSkill);
+                expect(request.skill.index).toBe(0);
+
+                expect(request.skill.all).toExist();
+                expect(request.skill.all.length).toBe(2);
+                expect(request.skill.all[0]).toBe(fakeMyTopicSkill);
+                expect(request.skill.all[1]).toBe(fakeMyAnotherTopicSkill);
+
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(request.skill).toExist();
+                expect(request.skill.current).toBe(fakeMyAnotherTopicSkill);
+                expect(request.skill.index).toBe(1);
+
+                expect(request.skill.all).toExist();
+                expect(request.skill.all.length).toBe(2);
+                expect(request.skill.all[0]).toBe(fakeMyTopicSkill);
+                expect(request.skill.all[1]).toBe(fakeMyAnotherTopicSkill);
+
+                response.message = new SingleLineMessage('myanothertopic response');
+                return next();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi.", function (err, messages) {
+                return done();
             });
         });
 
