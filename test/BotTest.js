@@ -362,7 +362,7 @@ describe('Bot', function () {
                 expect(request.sentence.all[1]).toBe("Hi.");
 
                 response.message = new SingleLineMessage('mytopic response');
-                return next()
+                return next();
             }));
 
             var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
@@ -376,7 +376,7 @@ describe('Bot', function () {
                 expect(request.sentence.all[1]).toBe("Hi.");
 
                 response.message = new SingleLineMessage('myanothertopic response');
-                return next()
+                return next();
             }));
 
             var bot = new Bot({contextStore: contextStore});
