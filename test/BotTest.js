@@ -422,6 +422,33 @@ describe('Bot', function () {
             });
         });
 
+        it('does not call the next skill when previous skill calls final()', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+                if (sentence === 'Hello.') return 'mytopic';
+                return 'myanothertopic';
+            });
+
+            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                response.final();
+            }));
+
+            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                done('This skill should not have been called.');
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyAnotherTopicSkill);
+
+            return bot.resolve(123, "Hello. Hi.", function (err, messages) {
+                expect(messages.length).toBe(1);
+                expect(messages[0].content).toBe('mytopic response');
+                return done();
+            });
+        });
+
         it('resolves context from a previously saved context with the built in context store', function (done) {
             var mockClassifier = mockClassifierWithMockClassifierFactory();
             mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
