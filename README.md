@@ -80,7 +80,7 @@ classifying things correctly. Also, keep in mind that the bot does not do an exa
 
 Once you have trained the bot for some topics, you need to add some skills. Skills are actions that the bot will execute when it recognises a topic. So topics and skills map to 1:1. 
 
-To add a skill, you need to create it first. A skill requires two things. A topic that it maps to and a function that the bot will call in order to execute the skill. This function will take four parameters, namely: `context, request, response, next`. The `context` parameter is used to store any useful contextual information from that skill. The `request` parameter contains information about the request, same for `response`. The `next` parameter is a function that you can call to let the bot
+To add a skill, you need to create it first. A skill requires three things. Name of the skill that is unique to the bot. The name is used to relate skills later on within the context. A topic that it maps to and a function that the bot will call in order to execute the skill. This function will take four parameters, namely: `context, request, response, next`. The `context` parameter is used to store any useful contextual information from that skill. The `request` parameter contains information about the request, same for `response`. The `next` parameter is a function that you can call to let the bot
 know that you are done processing. Here's what a skill looks like:
 
 ```javascript
@@ -89,14 +89,14 @@ var howAction = function(context, request, response, next) {
     next();
 };
 
-var howSkill = new Skill('how_are_you', howAction);
+var howSkill = new Skill('how_skill', 'how_are_you', howAction);
 
 var helpAction = function(context, request, response, next) {
     response.message = new SingleLineMessage('You asked: \"' + request.message.content + '\". I can tell you how I\'m doing if you ask nicely.');
     next();
 };
 
-var helpSkill = new Skill('help', helpAction);
+var helpSkill = new Skill('help_skill', 'help', helpAction);
 ```
 
 Once you have defined some skills, you need to add them to the bot. Add the skill to the bot like so:
