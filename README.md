@@ -3,7 +3,6 @@ Framework for developing chat bot applications.
 
 [![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/talkify.svg?branch=master)](https://travis-ci.org/manthanhd/talkify) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/talkify/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/talkify?branch=master)
 
-
 <!-- vim-markdown-toc GFM -->
 * [Usage](#usage)
 	* [Setup](#setup)
@@ -12,6 +11,7 @@ Framework for developing chat bot applications.
 		* [Train](#train)
 		* [Add Skills](#add-skills)
 		* [Resolve queries](#resolve-queries)
+	* [Configuration Options](#configuration-options)
 	* [Extending bot](#extending-bot)
 		* [Context management](#context-management)
 * [Contributing](#contributing)
@@ -20,9 +20,10 @@ Framework for developing chat bot applications.
 
 # Usage
 ## Setup
-Make sure you have node and npm installed. As of now, this module has been tested against latest node, 6, 5, 4, 0.12 and 0.10 within Travis CI pipeline. 
 
-Simply run:
+Make sure you have node and npm installed. As of now, this module has been tested against latest, 4, 0.12 and 0.10 node versions within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline. 
+
+Simply run `npm install` command to install:
 
 ```bash
 npm install --save talkify
@@ -58,7 +59,7 @@ Once the dependencies have been loaded, you can initialise the bot core.
 const bot = new Bot({classifierPreference: 'naive_bayes'});
 ```
 
-For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like ContextStore and Classifier etc. We'll cover that in wiki afterwards.
+For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like `ContextStore` and `Classifier` etc. We'll cover that in wiki afterwards.
 
 ### Train
 
@@ -150,6 +151,27 @@ When you run your code, you should get two messages back:
   { type: 'SingleLine',
     content: 'You asked: "How\'s it going? Assistance required please.". I can tell you how I\'m doing if you ask nicely.' } ]
 ```
+
+## Configuration Options
+
+### Classifier Preference
+
+Currently the bot can work with two types of classifiers. These are Naive Bayes and Logistic Regression classifiers. The classifier preference switch (`classifierPreference`) allows you to specify your preference with regards to which classifier you'd prefer. This switch currently accepts the following options:
+
+| Value for `classifierPreference` | Resulting classifier used       |
+| ------------------------------ |:---------------------------------:|
+| naive_bayes                    | Naive Bayes Classifier            |
+| logistic_regression            | Logistic Regression Classifier    |
+
+### Context Store
+
+The bot core also accepts an alternate implementation for the built in context store. Please see [Context management](#context-management) for more details.
+
+### Classifier
+
+You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier. 
+
+If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
 
 ## Extending bot
 
