@@ -12,7 +12,8 @@
     "bot",
     "chat",
     "ai",
-    "nlp"
+    "nlp",
+    "framework"
   ],
   "author": "Manthan Dave <manthanhd@live.com> (https://www.manthanhd.com)",
   "license": "MIT",
