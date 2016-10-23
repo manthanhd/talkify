@@ -185,7 +185,7 @@ describe('Bot', function () {
             const fakeSkillFn = function (context, req, res, next) {
             };
 
-            const fakeSkill = new Skill('topic', fakeSkillFn);
+            const fakeSkill = new Skill('fakeskill', 'topic', fakeSkillFn);
             bot.addSkill(fakeSkill);
 
             const skills = bot.getSkills();
@@ -224,11 +224,11 @@ describe('Bot', function () {
                 return 'myanothertopic';
             });
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('mytopic response');
                 return next()
             }));
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('myanothertopic response');
                 return next()
             }));
@@ -270,12 +270,12 @@ describe('Bot', function () {
             var contextStore_putSpy = expect.spyOn(contextStore, 'put').andCallThrough();
             var contextStore_getSpy = expect.spyOn(contextStore, 'get').andCallThrough();
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('mytopic response');
                 return next()
             }));
 
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('myanothertopic response');
                 return next()
             }));
@@ -310,12 +310,12 @@ describe('Bot', function () {
                 }
             };
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('mytopic response');
                 return next()
             }));
 
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('myanothertopic response');
                 return next()
             }));
@@ -341,7 +341,7 @@ describe('Bot', function () {
                 return 'myanothertopic';
             });
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 expect(request.sentence).toExist();
                 expect(request.sentence.current).toBe("Hello.");
                 expect(request.sentence.index).toBe(0);
@@ -355,7 +355,7 @@ describe('Bot', function () {
                 return next();
             }));
 
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 expect(request.sentence).toExist();
                 expect(request.sentence.current).toBe("Hi.");
                 expect(request.sentence.index).toBe(1);
@@ -385,29 +385,27 @@ describe('Bot', function () {
                 return 'myanothertopic';
             });
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 expect(request.skill).toExist();
-                expect(request.skill.current).toBe(fakeMyTopicSkill);
                 expect(request.skill.index).toBe(0);
 
                 expect(request.skill.all).toExist();
                 expect(request.skill.all.length).toBe(2);
-                expect(request.skill.all[0]).toBe(fakeMyTopicSkill);
-                expect(request.skill.all[1]).toBe(fakeMyAnotherTopicSkill);
+                expect(request.skill.all[0].name).toBe(fakeMyTopicSkill.name);
+                expect(request.skill.all[1].name).toBe(fakeMyAnotherTopicSkill.name);
 
                 response.message = new SingleLineMessage('mytopic response');
                 return next();
             }));
 
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 expect(request.skill).toExist();
-                expect(request.skill.current).toBe(fakeMyAnotherTopicSkill);
                 expect(request.skill.index).toBe(1);
 
                 expect(request.skill.all).toExist();
                 expect(request.skill.all.length).toBe(2);
-                expect(request.skill.all[0]).toBe(fakeMyTopicSkill);
-                expect(request.skill.all[1]).toBe(fakeMyAnotherTopicSkill);
+                expect(request.skill.all[0].name).toBe(fakeMyTopicSkill.name);
+                expect(request.skill.all[1].name).toBe(fakeMyAnotherTopicSkill.name);
 
                 response.message = new SingleLineMessage('myanothertopic response');
                 return next();
@@ -429,12 +427,12 @@ describe('Bot', function () {
                 return 'myanothertopic';
             });
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('mytopic response');
                 response.final();
             }));
 
-            var fakeMyAnotherTopicSkill = new Skill('myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
                 done('This skill should not have been called.');
             }));
 
@@ -458,7 +456,7 @@ describe('Bot', function () {
 
             var firstRun = true;
 
-            var fakeMyTopicSkill = new Skill('mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
                 if(firstRun === true) {
                     expect(context.something).toNotExist();
                 } else {
@@ -474,6 +472,34 @@ describe('Bot', function () {
 
             bot.resolve(123, "Hello.", function(err, messages) {done();});
             return bot.resolve(123, "Hello.", function (err, messages) {});
+        });
+
+        it('calls mapped undefined skill when skill cannot be found for a topic', function (done) {
+            mockery.deregisterAll();
+            mockery.disable();
+            //var mockClassifier = mockClassifierWithMockClassifierFactory();
+            //mockClassifier.classify = expect.createSpy().andCall(function (sentence) {
+            //    if (sentence === 'Hello.') return 'mytopic';
+            //    return 'myanothertopic';
+            //});
+
+            var fakeMyTopicSkill = new Skill('myskill', undefined, expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            var resolved = function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].content).toBe('mytopic response');
+                done();
+            };
+            return bot.resolve(123, "kiwi", resolved);
         });
     });
 
