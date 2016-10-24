@@ -12,6 +12,9 @@ Framework for developing chat bot applications.
 		* [Add Skills](#add-skills)
 		* [Resolve queries](#resolve-queries)
 	* [Configuration Options](#configuration-options)
+		* [Classifier Preference](#classifier-preference)
+		* [Context Store](#context-store)
+		* [Classifier](#classifier)
 	* [Extending bot](#extending-bot)
 		* [Context management](#context-management)
 * [Contributing](#contributing)
@@ -207,5 +210,6 @@ The current spec for `ContextStore` requires three functions to be implemented. 
 If you were to run that code with some query resolves, you will find that the remove function never gets called. This is a work in progress as currently there is no limit as to how long a context must be remembered.
 
 # Contributing
-WIP
+
+Please see the [contributing guide](./CONTRIBUTING.md) for more details.
 
