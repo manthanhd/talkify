@@ -102,7 +102,7 @@ var howSkill = new Skill('how_skill', 'how_are_you', howAction);
 var helpSkill = new Skill('help_skill', 'help', helpAction);
 ```
 
-**Note: ** Name of a skill can be undefined. However, please be aware that doing so will mean that the bot will execute that skill whenever its confidence level is 0 for responding to a given query.
+**Note:** Name of a skill can be undefined. However, please be aware that doing so will mean that the bot will execute that skill whenever its confidence level is 0 for responding to a given query.
 
 Once you have defined some skills, you need to add them to the bot. Add the skill to the bot like so:
 
