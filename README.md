@@ -93,13 +93,12 @@ var howAction = function(context, request, response, next) {
     next();
 };
 
-var howSkill = new Skill('how_skill', 'how_are_you', howAction);
-
 var helpAction = function(context, request, response, next) {
     response.message = new SingleLineMessage('You asked: \"' + request.message.content + '\". I can tell you how I\'m doing if you ask nicely.');
     next();
 };
 
+var howSkill = new Skill('how_skill', 'how_are_you', howAction);
 var helpSkill = new Skill('help_skill', 'help', helpAction);
 ```
 
