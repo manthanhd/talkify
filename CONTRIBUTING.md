@@ -56,7 +56,7 @@ $ git push origin branch_name
 
 Navigate to your repository URL. This might be ` https://github.com/username/talkify`. Provided you have just pushed your code, GitHub should provide you with a prompt to raise a pull request. 
 
-Provide as much information as you can as to what value does the pull request brings. Please make an effort to reference any existing issues (if any) that the pull request impacts.
+Provide as much information as you can as to what value the pull request brings. Please make an effort to reference any existing issues (if any) that the pull request impacts.
 
 I will try to review your pull request within a few days of opening. If there are comments, please address them in the commits and once you push them, please comment back on the pull request when it is done, replying to the original comment.
 
