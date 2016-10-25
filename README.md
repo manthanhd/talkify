@@ -3,7 +3,6 @@ Framework for developing chat bot applications.
 
 [![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/talkify.svg?branch=master)](https://travis-ci.org/manthanhd/talkify) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/talkify/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/talkify?branch=master)
 
-
 <!-- vim-markdown-toc GFM -->
 * [Usage](#usage)
 	* [Setup](#setup)
@@ -12,6 +11,10 @@ Framework for developing chat bot applications.
 		* [Train](#train)
 		* [Add Skills](#add-skills)
 		* [Resolve queries](#resolve-queries)
+	* [Configuration Options](#configuration-options)
+		* [Classifier Preference](#classifier-preference)
+		* [Context Store](#context-store)
+		* [Classifier](#classifier)
 	* [Extending bot](#extending-bot)
 		* [Context management](#context-management)
 * [Contributing](#contributing)
@@ -20,9 +23,10 @@ Framework for developing chat bot applications.
 
 # Usage
 ## Setup
-Make sure you have node and npm installed. As of now, this module has been tested against latest node, 6, 5, 4, 0.12 and 0.10 within Travis CI pipeline. 
 
-Simply run:
+Make sure you have node and npm installed. As of now, this module has been tested against latest, 4, 0.12 and 0.10 node versions within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline. 
+
+Simply run `npm install` command to install:
 
 ```bash
 npm install --save talkify
@@ -58,7 +62,7 @@ Once the dependencies have been loaded, you can initialise the bot core.
 const bot = new Bot({classifierPreference: 'naive_bayes'});
 ```
 
-For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like ContextStore and Classifier etc. We'll cover that in wiki afterwards.
+For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like `ContextStore` and `Classifier` etc. We'll cover that in wiki afterwards.
 
 ### Train
 
@@ -80,7 +84,7 @@ classifying things correctly. Also, keep in mind that the bot does not do an exa
 
 Once you have trained the bot for some topics, you need to add some skills. Skills are actions that the bot will execute when it recognises a topic. So topics and skills map to 1:1. 
 
-To add a skill, you need to create it first. A skill requires two things. A topic that it maps to and a function that the bot will call in order to execute the skill. This function will take four parameters, namely: `context, request, response, next`. The `context` parameter is used to store any useful contextual information from that skill. The `request` parameter contains information about the request, same for `response`. The `next` parameter is a function that you can call to let the bot
+To add a skill, you need to create it first. A skill requires three things. Name of the skill that is unique to the bot. The name is used to relate skills later on within the context. A topic that it maps to and a function that the bot will call in order to execute the skill. This function will take four parameters, namely: `context, request, response, next`. The `context` parameter is used to store any useful contextual information from that skill. The `request` parameter contains information about the request, same for `response`. The `next` parameter is a function that you can call to let the bot
 know that you are done processing. Here's what a skill looks like:
 
 ```javascript
@@ -89,15 +93,16 @@ var howAction = function(context, request, response, next) {
     next();
 };
 
-var howSkill = new Skill('how_are_you', howAction);
-
 var helpAction = function(context, request, response, next) {
     response.message = new SingleLineMessage('You asked: \"' + request.message.content + '\". I can tell you how I\'m doing if you ask nicely.');
     next();
 };
 
-var helpSkill = new Skill('help', helpAction);
+var howSkill = new Skill('how_skill', 'how_are_you', howAction);
+var helpSkill = new Skill('help_skill', 'help', helpAction);
 ```
+
+**Note:** Name of a skill can be undefined. However, please be aware that doing so will mean that the bot will execute that skill whenever its confidence level is 0 for responding to a given query.
 
 Once you have defined some skills, you need to add them to the bot. Add the skill to the bot like so:
 
@@ -149,6 +154,27 @@ When you run your code, you should get two messages back:
     content: 'You asked: "How\'s it going? Assistance required please.". I can tell you how I\'m doing if you ask nicely.' } ]
 ```
 
+## Configuration Options
+
+### Classifier Preference
+
+Currently the bot can work with two types of classifiers. These are Naive Bayes and Logistic Regression classifiers. The classifier preference switch (`classifierPreference`) allows you to specify your preference with regards to which classifier you'd prefer. This switch currently accepts the following options:
+
+| Value for `classifierPreference` | Resulting classifier used       |
+| ------------------------------ |:---------------------------------:|
+| naive_bayes                    | Naive Bayes Classifier            |
+| logistic_regression            | Logistic Regression Classifier    |
+
+### Context Store
+
+The bot core also accepts an alternate implementation for the built in context store. Please see [Context management](#context-management) for more details.
+
+### Classifier
+
+You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier. 
+
+If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
+
 ## Extending bot
 
 ### Context management
@@ -183,5 +209,6 @@ The current spec for `ContextStore` requires three functions to be implemented. 
 If you were to run that code with some query resolves, you will find that the remove function never gets called. This is a work in progress as currently there is no limit as to how long a context must be remembered.
 
 # Contributing
-WIP
+
+Please see the [contributing guide](./CONTRIBUTING.md) for more details.
 

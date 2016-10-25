@@ -1,10 +1,10 @@
 {
   "name": "talkify",
-  "version": "0.1.5",
+  "version": "1.0.0",
   "description": "Framework for developing chat bot applications.",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec",
+    "test": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "lint": "node ./node_modules/gulp/bin/gulp.js lint"
   },
@@ -12,7 +12,8 @@
     "bot",
     "chat",
     "ai",
-    "nlp"
+    "nlp",
+    "framework"
   ],
   "author": "Manthan Dave <manthanhd@live.com> (https://www.manthanhd.com)",
   "license": "MIT",

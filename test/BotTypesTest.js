@@ -149,9 +149,20 @@ describe('TrainingDocument', function() {
 
 describe('Skill', function() {
     const Skill = require('../lib/BotTypes').Skill;
+
+    it('throws TypeError when name parameter is not string', function(done) {
+        try {
+            new Skill([], 'mytopic', function(){});
+            done('should have failed');
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
     it('throws TypeError when topic parameter is undefined', function(done) {
         try {
-            new Skill();
+            new Skill('name', undefined);
             done('should have failed');
         } catch (e) {
             expect(e).toBeA(TypeError);
@@ -161,7 +172,7 @@ describe('Skill', function() {
 
     it('throws TypeError when topic parameter is not string', function(done) {
         try {
-            new Skill([]);
+            new Skill('name', []);
             done('should have failed');
         } catch (e) {
             expect(e).toBeA(TypeError);
@@ -171,7 +182,7 @@ describe('Skill', function() {
 
     it('throws TypeError when skillFn parameter is undefined', function(done) {
         try {
-            new Skill('', undefined);
+            new Skill('name', '', undefined);
             done('should have failed');
         } catch (e) {
             expect(e).toBeA(TypeError);
@@ -181,7 +192,7 @@ describe('Skill', function() {
 
     it('throws TypeError when skillFn parameter is not string', function(done) {
         try {
-            new Skill('', []);
+            new Skill('name', '', []);
             done('should have failed');
         } catch (e) {
             expect(e).toBeA(TypeError);
@@ -193,7 +204,7 @@ describe('Skill', function() {
         const skillFn = function(context, req, res, next) {
 
         };
-        var skill = new Skill('topic', skillFn);
+        var skill = new Skill('name', 'topic', skillFn);
 
         expect(skill.topic).toBe('topic');
         expect(skill.apply).toBe(skillFn);
