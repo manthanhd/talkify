@@ -24,7 +24,7 @@ Framework for developing chat bot applications.
 # Usage
 ## Setup
 
-Make sure you have node and npm installed. As of now, this module has been tested against latest, 4, 0.12 and 0.10 node versions within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline. 
+Make sure you have node and npm installed. As of now, this module has been tested against latest, 4, 0.12 and 0.10 node versions within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline.
 
 Simply run `npm install` command to install:
 
@@ -82,7 +82,7 @@ classifying things correctly. Also, keep in mind that the bot does not do an exa
 
 ### Add Skills
 
-Once you have trained the bot for some topics, you need to add some skills. Skills are actions that the bot will execute when it recognises a topic. So topics and skills map to 1:1. 
+Once you have trained the bot for some topics, you need to add some skills. Skills are actions that the bot will execute when it recognises a topic. So topics and skills map to 1:1.
 
 To add a skill, you need to create it first. A skill requires three things. Name of the skill that is unique to the bot. The name is used to relate skills later on within the context. A topic that it maps to and a function that the bot will call in order to execute the skill. This function will take four parameters, namely: `context, request, response, next`. The `context` parameter is used to store any useful contextual information from that skill. The `request` parameter contains information about the request, same for `response`. The `next` parameter is a function that you can call to let the bot
 know that you are done processing. Here's what a skill looks like:
@@ -154,6 +154,13 @@ When you run your code, you should get two messages back:
     content: 'You asked: "How\'s it going? Assistance required please.". I can tell you how I\'m doing if you ask nicely.' } ]
 ```
 
+### Chainable methods
+Currently `train`, `addSkill` and `resolve` methods support chainable attitude. That's mean you can create Bot object and cascade methods like is mentioned below.
+
+```javascript
+	new Bot().train(topic, sentence).addSkill(skill).resolve(....)
+```
+
 ## Configuration Options
 
 ### Classifier Preference
@@ -171,14 +178,14 @@ The bot core also accepts an alternate implementation for the built in context s
 
 ### Classifier
 
-You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier. 
+You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier.
 
 If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
 
 ## Extending bot
 
 ### Context management
-By default, the bot core uses its built in version of ContextStore. If you look into lib/ContextStore.js, you'll find that it is a very simple implementation where the context is stored in a simple in-memory map with the `contextId` being the key and the context object being the value. Of course when you come to deploy this, the built-in context store will be very limiting. 
+By default, the bot core uses its built in version of ContextStore. If you look into lib/ContextStore.js, you'll find that it is a very simple implementation where the context is stored in a simple in-memory map with the `contextId` being the key and the context object being the value. Of course when you come to deploy this, the built-in context store will be very limiting.
 
 Extending the context store is very easy. Within the config, you can provide your own implementation for the ContextStore object. The following code provides a very trivial implementation that simply logs the values to the console.
 
@@ -211,4 +218,3 @@ If you were to run that code with some query resolves, you will find that the re
 # Contributing
 
 Please see the [contributing guide](./CONTRIBUTING.md) for more details.
-
