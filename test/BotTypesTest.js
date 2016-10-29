@@ -211,3 +211,42 @@ describe('Skill', function() {
         done();
     });
 });
+
+describe('StaticResponseSkill', function() {
+    const Message = require('../lib/BotTypes').Message;
+    const SingleLineMessage = require('../lib/BotTypes').SingleLineMessage;
+    const MultiLineMessage = require('../lib/BotTypes').MultiLineMessage;
+    const StaticResponseSkill = require('../lib/BotTypes').StaticResponseSkill;
+
+    it('returns new skill that always returns given static string response', function(done) {
+        var skill = new StaticResponseSkill('hello', 'hey there!');
+        expect(skill.topic).toBe('hello');
+        var fakeResponseObject = {};
+        return skill.apply({}, {}, fakeResponseObject, function() {
+            expect(fakeResponseObject.message).toBeA(Message);
+            expect(fakeResponseObject.message.content).toBe('hey there!');
+            done();
+        });
+    });
+
+    it('returns new skill that always returns given static message response', function(done) {
+        var singleLineMessage = new SingleLineMessage('hey there!');
+        var skill = new StaticResponseSkill('hello', singleLineMessage);
+        expect(skill.topic).toBe('hello');
+        var fakeResponseObject = {};
+        return skill.apply({}, {}, fakeResponseObject, function() {
+            expect(fakeResponseObject.message).toBeA(Message);
+            expect(fakeResponseObject.message).toBe(singleLineMessage);
+            expect(fakeResponseObject.message.content).toBe('hey there!');
+            done();
+        });
+    });
+
+    it('throws type error when static response object is neither of type Message nor of type String', function() {
+        try {
+            new StaticResponseSkill('hello', {});
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+        }
+    });
+});
