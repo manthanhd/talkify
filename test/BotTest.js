@@ -2,7 +2,6 @@
  * Created by manthanhd on 17/10/2016.
  */
 const expect = require('expect');
-const sinon = require('sinon');
 const mockery = require('mockery');
 
 function mockClassifierWithMockClassifierFactory() {
@@ -214,6 +213,20 @@ describe('Bot', function () {
                 done();
             }
         });
+
+        it('adds multiple skills with different confidence levels to the same topic', function(done) {
+            var bot = new Bot();
+            try {
+                bot.addSkill(new Skill('name', 'topic', function(){}), 20);
+                bot.addSkill(new Skill('anothername', 'topic', function(){}), 50);
+                var skills = bot.getSkills();
+                expect(skills.length).toBe(1);
+                expect(skills).toBeA(Array);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        })
     });
 
     describe('resolve', function () {

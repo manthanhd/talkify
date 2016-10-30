@@ -145,6 +145,24 @@ describe('TrainingDocument', function() {
         expect(trainingDocument.topic).toBe('topic');
         expect(trainingDocument.text).toBe('text');
     });
+
+    it('throws TypeError when text is not of type string', function(done) {
+        try {
+            new TrainingDocument('topic', {});
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when text is undefined', function(done) {
+        try {
+            new TrainingDocument('topic', undefined);
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
 });
 
 describe('Skill', function() {
@@ -247,6 +265,111 @@ describe('StaticResponseSkill', function() {
             new StaticResponseSkill('hello', {});
         } catch (e) {
             expect(e).toBeA(TypeError);
+        }
+    });
+});
+
+describe('StaticRandomResponseSkill', function() {
+    const Message = require('../lib/BotTypes').Message;
+    const SingleLineMessage = require('../lib/BotTypes').SingleLineMessage;
+    const MultiLineMessage = require('../lib/BotTypes').MultiLineMessage;
+    const StaticResponseSkill = require('../lib/BotTypes').StaticResponseSkill;
+    const StaticRandomResponseSkill = require('../lib/BotTypes').StaticRandomResponseSkill;
+
+    it('returns new skill that returns random response from given string responses', function(done) {
+        var skill = new StaticRandomResponseSkill('hello', ['awesome', 'amazing', 'one', 'two']);
+        skill._getRandomIndex = function(min, max) {
+            return 3;
+        };
+
+        var fakeResponseObject = {};
+        return skill.apply({}, {}, fakeResponseObject, function() {
+            expect(fakeResponseObject.message).toBeA(Message);
+            expect(fakeResponseObject.message.content).toBe('two');
+
+            fakeResponseObject = {};
+            skill._getRandomIndex = function(min, max) {
+                return 0;
+            };
+
+            return skill.apply({}, {}, fakeResponseObject, function() {
+                expect(fakeResponseObject.message).toBeA(Message);
+                expect(fakeResponseObject.message.content).toBe('awesome');
+                done();
+            });
+        });
+    });
+
+    it('returns new skill that returns random response from given Message responses', function(done) {
+        var awesomeSingleLineResponse = new SingleLineMessage('awesome');
+        var amazingSingleLineResponse = new SingleLineMessage('amazing');
+        var oneSingleLineResponse = new SingleLineMessage('one');
+        var twoSingleLineResponse = new SingleLineMessage('two');
+        var skill = new StaticRandomResponseSkill('hello', [awesomeSingleLineResponse, amazingSingleLineResponse, oneSingleLineResponse, twoSingleLineResponse]);
+        skill._getRandomIndex = function(min, max) {
+            return 3;
+        };
+
+        var fakeResponseObject = {};
+        return skill.apply({}, {}, fakeResponseObject, function() {
+            expect(fakeResponseObject.message).toBeA(Message);
+            expect(fakeResponseObject.message).toBe(twoSingleLineResponse);
+
+            fakeResponseObject = {};
+            skill._getRandomIndex = function(min, max) {
+                return 0;
+            };
+
+            return skill.apply({}, {}, fakeResponseObject, function() {
+                expect(fakeResponseObject.message).toBeA(Message);
+                expect(fakeResponseObject.message).toBe(awesomeSingleLineResponse);
+                done();
+            });
+        });
+    });
+
+    it('throws TypeError when one of the items in the array is not of valid type', function(done) {
+        try {
+            var skill = new StaticRandomResponseSkill('hello', ['awesome', {}]);
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when the responses parameter is not an array', function(done) {
+        try {
+            new StaticRandomResponseSkill('hello', {});
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when the responses parameter is undefined', function(done) {
+        try {
+            new StaticRandomResponseSkill('hello', undefined);
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeError when the topic parameter is undefined', function(done) {
+        try {
+            new StaticRandomResponseSkill(undefined);
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
+        }
+    });
+
+    it('throws TypeErrpr when responses array is empty', function(done) {
+        try {
+            new StaticRandomResponseSkill('topic', []);
+        } catch (e) {
+            expect(e).toBeA(TypeError);
+            done();
         }
     });
 });
