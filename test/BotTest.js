@@ -619,51 +619,30 @@ describe('Bot', function () {
         });
     });
 
-    describe('ChainableMethods', function () {
-        it('Chainable methods with train and addSkill', function (done) {
-            var mockClassifier = mockClassifierWithMockClassifierFactory();
+    describe('chainableMethods', function () {
+        it('chainable train method', function (done) {
+          const bot = new Bot();
+          const returnReference = bot.train('topic', 'text');
 
-            var bot = new Bot({classifierPreference: 'naive_bayes'});
-
-            const fakeSkillFn = function (context, req, res, next) {};
-            const fakeSkill = new Skill('fakeskill', 'topic', fakeSkillFn);
-
-            const skills = bot.train('topic', 'text').addSkill(fakeSkill).getSkills();
-
-            expect(mockClassifier.addDocument).toHaveBeenCalledWith('text', 'topic');
-            expect(mockClassifier.train).toHaveBeenCalled();
-            expect(skills.length).toBe(1);
-            done();
+          expect(returnReference).toBe(bot);
+          done();
         });
 
-        it("Chainable methods resolves multi sentence message into a multi message response", function (done) {
-            var mockClassifier = mockClassifierWithMockClassifierFactory();
-            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence) {
-                if (sentence === 'Hello.') return [{label: 'mytopic', value: 1}];
-                return [{label: 'myanothertopic', value: 1}];
-            });
+        it('chainable addSkill method', function (done) {
+          const bot = new Bot();
+          const fakeSkillFn = function (context, req, res, next) {};
+          const returnReference = bot.addSkill(new Skill('fakeskill', 'topic', fakeSkillFn));
 
-            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
-                response.message = new SingleLineMessage('mytopic response');
-                return next()
-            }));
+          expect(returnReference).toBe(bot);
+          done();
+        });
 
-            var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
-                response.message = new SingleLineMessage('myanothertopic response');
-                return next()
-            }));
+        it('chainable resolve method', function (done) {
+          const bot = new Bot();
+          const returnReference = bot.resolve(123, "Hello. Hi.", function (err, messages) {});
 
-            return (new Bot()).addSkill(fakeMyTopicSkill).addSkill(fakeMyAnotherTopicSkill).resolve(123, "Hello. Hi", function (err, messages) {
-                if (err) return done(err);
-
-                expect(messages).toBeA(Array);
-                expect(messages.length).toBe(2);
-                expect(messages[0]).toBeA(Message);
-                expect(messages[0].content).toBe('mytopic response');
-                expect(messages[1]).toBeA(Message);
-                expect(messages[1].content).toBe('myanothertopic response');
-                done();
-            });
+          expect(returnReference).toBe(bot);
+          done();
         });
     });
 });

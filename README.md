@@ -155,7 +155,7 @@ When you run your code, you should get two messages back:
 ```
 
 ### Chainable methods
-Currently `train`, `addSkill` and `resolve` methods support chainable attitude. That's mean you can create Bot object and cascade methods like is mentioned below.
+Currently `train`, `addSkill` and `resolve` methods are chainable. That means you can create Bot object and cascade methods like is mentioned below.
 
 ```javascript
 	new Bot().train(topic, sentence).addSkill(skill).resolve(....)
