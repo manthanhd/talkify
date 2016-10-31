@@ -237,7 +237,7 @@ describe('StaticResponseSkill', function() {
     const StaticResponseSkill = require('../lib/BotTypes').StaticResponseSkill;
 
     it('returns new skill that always returns given static string response', function(done) {
-        var skill = new StaticResponseSkill('hello', 'hey there!');
+        var skill = new StaticResponseSkill('myskill', 'hello', 'hey there!');
         expect(skill.topic).toBe('hello');
         var fakeResponseObject = {};
         return skill.apply({}, {}, fakeResponseObject, function() {
@@ -249,7 +249,7 @@ describe('StaticResponseSkill', function() {
 
     it('returns new skill that always returns given static message response', function(done) {
         var singleLineMessage = new SingleLineMessage('hey there!');
-        var skill = new StaticResponseSkill('hello', singleLineMessage);
+        var skill = new StaticResponseSkill('myskill', 'hello', singleLineMessage);
         expect(skill.topic).toBe('hello');
         var fakeResponseObject = {};
         return skill.apply({}, {}, fakeResponseObject, function() {
@@ -262,7 +262,7 @@ describe('StaticResponseSkill', function() {
 
     it('throws type error when static response object is neither of type Message nor of type String', function() {
         try {
-            new StaticResponseSkill('hello', {});
+            new StaticResponseSkill('myskill', 'hello', {});
         } catch (e) {
             expect(e).toBeA(TypeError);
         }
@@ -277,7 +277,7 @@ describe('StaticRandomResponseSkill', function() {
     const StaticRandomResponseSkill = require('../lib/BotTypes').StaticRandomResponseSkill;
 
     it('returns new skill that returns random response from given string responses', function(done) {
-        var skill = new StaticRandomResponseSkill('hello', ['awesome', 'amazing', 'one', 'two']);
+        var skill = new StaticRandomResponseSkill('myrandomskill', 'hello', ['awesome', 'amazing', 'one', 'two']);
         skill._getRandomIndex = function(min, max) {
             return 3;
         };
@@ -305,7 +305,7 @@ describe('StaticRandomResponseSkill', function() {
         var amazingSingleLineResponse = new SingleLineMessage('amazing');
         var oneSingleLineResponse = new SingleLineMessage('one');
         var twoSingleLineResponse = new SingleLineMessage('two');
-        var skill = new StaticRandomResponseSkill('hello', [awesomeSingleLineResponse, amazingSingleLineResponse, oneSingleLineResponse, twoSingleLineResponse]);
+        var skill = new StaticRandomResponseSkill('myrandomskill', 'hello', [awesomeSingleLineResponse, amazingSingleLineResponse, oneSingleLineResponse, twoSingleLineResponse]);
         skill._getRandomIndex = function(min, max) {
             return 3;
         };
@@ -330,7 +330,7 @@ describe('StaticRandomResponseSkill', function() {
 
     it('throws TypeError when one of the items in the array is not of valid type', function(done) {
         try {
-            var skill = new StaticRandomResponseSkill('hello', ['awesome', {}]);
+            var skill = new StaticRandomResponseSkill('myrandomskill', 'hello', ['awesome', {}]);
         } catch (e) {
             expect(e).toBeA(TypeError);
             done();
@@ -339,7 +339,7 @@ describe('StaticRandomResponseSkill', function() {
 
     it('throws TypeError when the responses parameter is not an array', function(done) {
         try {
-            new StaticRandomResponseSkill('hello', {});
+            new StaticRandomResponseSkill('myrandomskill', 'hello', {});
         } catch (e) {
             expect(e).toBeA(TypeError);
             done();
@@ -348,7 +348,7 @@ describe('StaticRandomResponseSkill', function() {
 
     it('throws TypeError when the responses parameter is undefined', function(done) {
         try {
-            new StaticRandomResponseSkill('hello', undefined);
+            new StaticRandomResponseSkill('myrandomskill', 'hello', undefined);
         } catch (e) {
             expect(e).toBeA(TypeError);
             done();
@@ -357,7 +357,7 @@ describe('StaticRandomResponseSkill', function() {
 
     it('throws TypeError when the topic parameter is undefined', function(done) {
         try {
-            new StaticRandomResponseSkill(undefined);
+            new StaticRandomResponseSkill('myrandomskill', undefined);
         } catch (e) {
             expect(e).toBeA(TypeError);
             done();
@@ -366,7 +366,7 @@ describe('StaticRandomResponseSkill', function() {
 
     it('throws TypeErrpr when responses array is empty', function(done) {
         try {
-            new StaticRandomResponseSkill('topic', []);
+            new StaticRandomResponseSkill('myrandomskill', 'topic', []);
         } catch (e) {
             expect(e).toBeA(TypeError);
             done();
