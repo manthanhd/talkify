@@ -618,4 +618,31 @@ describe('Bot', function () {
             expect(classifier).toBe(fakeClassifier);
         });
     });
+
+    describe('chainableMethods', function () {
+        it('chainable train method', function (done) {
+          const bot = new Bot();
+          const returnReference = bot.train('topic', 'text');
+
+          expect(returnReference).toBe(bot);
+          done();
+        });
+
+        it('chainable addSkill method', function (done) {
+          const bot = new Bot();
+          const fakeSkillFn = function (context, req, res, next) {};
+          const returnReference = bot.addSkill(new Skill('fakeskill', 'topic', fakeSkillFn));
+
+          expect(returnReference).toBe(bot);
+          done();
+        });
+
+        it('chainable resolve method', function (done) {
+          const bot = new Bot();
+          const returnReference = bot.resolve(123, "Hello. Hi.", function (err, messages) {});
+
+          expect(returnReference).toBe(bot);
+          done();
+        });
+    });
 });
