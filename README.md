@@ -163,15 +163,6 @@ Currently `train`, `addSkill` and `resolve` methods are chainable. That means yo
 
 ## Configuration Options
 
-### Classifier Preference
-
-Currently the bot can work with two types of classifiers. These are Naive Bayes and Logistic Regression classifiers. The classifier preference switch (`classifierPreference`) allows you to specify your preference with regards to which classifier you'd prefer. This switch currently accepts the following options:
-
-| Value for `classifierPreference` | Resulting classifier used       |
-| ------------------------------ |:---------------------------------:|
-| naive_bayes                    | Naive Bayes Classifier            |
-| logistic_regression            | Logistic Regression Classifier    |
-
 ### Context Store
 
 The bot core also accepts an alternate implementation for the built in context store. Please see [Context management](#context-management) for more details.
@@ -179,6 +170,21 @@ The bot core also accepts an alternate implementation for the built in context s
 ### Classifier
 
 You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier.
+
+The built in classifier is the [talkify-natural-classifier](https://github.com/manthanhd/talkify-natural-classifier). This classifier provides two implementations:
+
+* `LogisticRegressionClassifier`
+* `BayesClassifier`
+
+The `LogisticRegressionClassifier` is the default classifier. If you prefer to implement the `BayesClassifier` from `talkify-natural-classifier`, you have to do following:
+
+```javascript
+var BayesClassifier = require('talkify-natural-classifier').BayesClassifier;
+
+var bot = new Bot({classifier: new BayesClassifier()});
+```
+
+If you prefer to use IBM Watson's Natural Language Processing Classifier instead, you should use the [talkify-watson-classifier](https://github.com/manthanhd/talkify-watson-classifier) library instead. Please see the guide on the Github repository page for more details on how to use that classifier.
 
 If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
 
