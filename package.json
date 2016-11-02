@@ -1,6 +1,6 @@
 {
   "name": "talkify",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Framework for developing chat bot applications.",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   ],
   "author": "Manthan Dave <manthanhd@live.com> (https://www.manthanhd.com)",
   "license": "MIT",
-  "repository" : {
+  "repository": {
     "type": "git",
     "url": "https://github.com/manthanhd/talkify.git"
   },
@@ -35,7 +35,6 @@
     "jshint-stylish": "^2.2.1",
     "mocha": "^3.1.2",
     "mocha-lcov-reporter": "^1.2.0",
-    "mockery": "^2.0.0",
-    "sinon": "^1.17.6"
+    "mockery": "^2.0.0"
   }
 }
