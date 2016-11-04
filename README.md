@@ -11,12 +11,13 @@ Framework for developing chat bot applications.
 		* [Train](#train)
 		* [Add Skills](#add-skills)
 		* [Resolve queries](#resolve-queries)
+		* [Chainable methods](#chainable-methods)
 	* [Configuration Options](#configuration-options)
-		* [Classifier Preference](#classifier-preference)
 		* [Context Store](#context-store)
 		* [Classifier](#classifier)
 	* [Extending bot](#extending-bot)
 		* [Context management](#context-management)
+		* [Custom Classifier](#custom-classifier)
 * [Contributing](#contributing)
 
 <!-- vim-markdown-toc -->
@@ -59,26 +60,34 @@ const TrainingDocument = BotTypes.TrainingDocument;
 Once the dependencies have been loaded, you can initialise the bot core.
 
 ```javascript
-const bot = new Bot({classifierPreference: 'naive_bayes'});
+const bot = new Bot();
 ```
 
-For this example, we're asking the bot to use `naive_bayes` classifier instead of the default `logistic_regression` classifier within the configuration object that's passed into the constructor. This is because the `naive_bayes` classifier is better at working with small amount of training data which is perfect for this tutorial. The Bot core also accepts other parameters in the configuration object. Here you can pass in configuration switch values or alternate implementations for things like `ContextStore` and `Classifier` etc. We'll cover that in wiki afterwards.
+The `Bot()` constructor also accepts parameters in the form of configuration object. Here you can pass in configuration switch values or alternate implementations for things like `ContextStore` and `Classifier` etc. We'll cover that afterwards in the [Configuration Options](#configuration-options) section.
 
 ### Train
 
 Once Bot has been initialised, the first thing you should do is to train it. To train it one document at a time synchronously, you can use the `train` method:
 
 ```javascript
-bot.train('how_are_you', 'how are you');
-bot.train('how_are_you', 'how are you doing');
-bot.train('how_are_you', 'how is it going');
-bot.train('help', 'how can you help');
-bot.train('help', 'i need some help');
-bot.train('help', 'how could you assist me');
+bot.trainAll([
+    new TrainingDocument('how_are_you', 'how are you'),
+    new TrainingDocument('how_are_you', 'how are you going'),
+    new TrainingDocument('how_are_you', 'how is it going'),
+
+    new TrainingDocument('help', 'how can you help'),
+    new TrainingDocument('help', 'i need some help'),
+    new TrainingDocument('help', 'how could you assist me')
+], function() {});
 ```
 
-The code above trains the bot to recognise the topic `how_are_you` when the text looks like `how are you` or `how are you doing` as well as `how is it going` but to recognise topic `help` when the text looks like `how can you help` or `i need some help` as well as `how can you assist me`. This is how you would train the bot. The first parameter in the `train` method is the topic that you want the bot to recognise and the second parameter is the text that you want the bot to classify as that topic. With enough training sets, the bot should get good at
-classifying things correctly. Also, keep in mind that the bot does not do an exact lookup so in a sense it is learning from the sentences that it is being trained for.
+The code above trains the bot to recognise the topic `how_are_you` when the text looks like `how are you` or `how are you doing` as well as `how is it going` but to recognise topic `help` when the text looks like `how can you help` or `i need some help` as well as `how can you assist me`. This is how you would train the bot. 
+
+The `trainAll` method accepts an array of `TrainingDocument` objects as well as a callback function. The `TrainingDocument` object constructor accepts two parameters. These are `topicName` and `trainingData`. The `topicName` parameter is the name of the topic you want to train the `trainingData` for and the `trainingData` is the sentence that you are feeding the bot as its training data. The `topicName` will later on map to actual skills the bot can respond to.
+
+The callback for the `trainAll` method is a function that the bot can call when the training is complete. If you have too much training data, you should implement this properly. In this example, since there is not much training data, we've passed in an empty `function`.
+
+Needless to say, the bot gets better with more training data. In this tutorial we are using the default classifier, which currently is the `LogisticRegression` classifier from the [talkify-natural-classifier](https://github.com/manthanhd/talkify-natural-classifier) library. This classifier typically needs bit more training data to start with but is more accurate than others in most conditions.
 
 ### Add Skills
 
@@ -163,15 +172,6 @@ Currently `train`, `addSkill` and `resolve` methods are chainable. That means yo
 
 ## Configuration Options
 
-### Classifier Preference
-
-Currently the bot can work with two types of classifiers. These are Naive Bayes and Logistic Regression classifiers. The classifier preference switch (`classifierPreference`) allows you to specify your preference with regards to which classifier you'd prefer. This switch currently accepts the following options:
-
-| Value for `classifierPreference` | Resulting classifier used       |
-| ------------------------------ |:---------------------------------:|
-| naive_bayes                    | Naive Bayes Classifier            |
-| logistic_regression            | Logistic Regression Classifier    |
-
 ### Context Store
 
 The bot core also accepts an alternate implementation for the built in context store. Please see [Context management](#context-management) for more details.
@@ -179,6 +179,21 @@ The bot core also accepts an alternate implementation for the built in context s
 ### Classifier
 
 You can also supply your own version of the classifier to the bot. This option was primarily used to make testing easier, however, it can still be used in production if you have a better version of the built-in classifier.
+
+The built in classifier is the [talkify-natural-classifier](https://github.com/manthanhd/talkify-natural-classifier). This classifier provides two implementations:
+
+* `LogisticRegressionClassifier`
+* `BayesClassifier`
+
+The `LogisticRegressionClassifier` is the default classifier. If you prefer to implement the `BayesClassifier` from `talkify-natural-classifier`, you can do the following:
+
+```javascript
+var BayesClassifier = require('talkify-natural-classifier').BayesClassifier;
+
+var bot = new Bot({classifier: new BayesClassifier()});
+```
+
+If you prefer to use IBM Watson's Natural Language Processing Classifier instead, you should use the [talkify-watson-classifier](https://github.com/manthanhd/talkify-watson-classifier) library instead. Please see the guide on the Github repository page for more details on how to use that classifier.
 
 If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
 
@@ -214,6 +229,19 @@ var bot = new Bot({contextStore: myContextStore});
 The current spec for `ContextStore` requires three functions to be implemented. These are `put, get and remove`. As long as these methods are provided, the bot does not care where the value for `contextStore` field in config comes from.
 
 If you were to run that code with some query resolves, you will find that the remove function never gets called. This is a work in progress as currently there is no limit as to how long a context must be remembered.
+
+### Custom Classifier
+
+As mentioned before, the default classifier that the bot uses is from the [talkify-natural-classifier](https://github.com/manthanhd/talkify-natural-classifier) library. You are free to write your own classifier and use it in your application. To do this, you need to extend the classifier interface defined in the [talkify-classifier](https://github.com/manthanhd/talkify-classifier) library.
+
+Once you have successfully extended that implementation, you can supply your classifier to the bot like so:
+
+```javascript
+var myClassifier = new MyAwesomeClassifier();
+var bot = new Bot({ classifier: myClassifier });
+```
+
+I'd love to see your implementation of the talkify classifier. If you have extended the interface and successfully implemented your classifier give me a shout! I'd be delighted to know your experience using this library.
 
 # Contributing
 
