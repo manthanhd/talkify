@@ -3,7 +3,24 @@ Framework for developing chat bot applications.
 
 [![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/talkify.svg?branch=master)](https://travis-ci.org/manthanhd/talkify) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/talkify/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/talkify?branch=master)
 
-[TOC]
+<!-- vim-markdown-toc GFM -->
+* [Usage](#usage)
+  * [Setup](#setup)
+  * [Code Tutorial](#code-tutorial)
+    * [Initialize](#initialize)
+    * [Train](#train)
+    * [Add Skills](#add-skills)
+    * [Resolve queries](#resolve-queries)
+  * [Configuration Options](#configuration-options)
+    * [Classifier Preference](#classifier-preference)
+    * [Context Store](#context-store)
+    * [Classifier](#classifier)
+  * [Extending bot](#extending-bot)
+    * [Context management](#context-management)
+* [Reference Documentation](#reference-documentation)
+* [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
 
 # Usage
 ## Setup
