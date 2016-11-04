@@ -3,23 +3,7 @@ Framework for developing chat bot applications.
 
 [![npm version](https://badge.fury.io/js/talkify.svg)](https://badge.fury.io/js/talkify) [![Build Status](https://travis-ci.org/manthanhd/talkify.svg?branch=master)](https://travis-ci.org/manthanhd/talkify) [![Coverage Status](https://coveralls.io/repos/github/manthanhd/talkify/badge.svg?branch=master)](https://coveralls.io/github/manthanhd/talkify?branch=master)
 
-<!-- vim-markdown-toc GFM -->
-* [Usage](#usage)
-	* [Setup](#setup)
-	* [Code Tutorial](#code-tutorial)
-		* [Initialize](#initialize)
-		* [Train](#train)
-		* [Add Skills](#add-skills)
-		* [Resolve queries](#resolve-queries)
-	* [Configuration Options](#configuration-options)
-		* [Classifier Preference](#classifier-preference)
-		* [Context Store](#context-store)
-		* [Classifier](#classifier)
-	* [Extending bot](#extending-bot)
-		* [Context management](#context-management)
-* [Contributing](#contributing)
-
-<!-- vim-markdown-toc -->
+[TOC]
 
 # Usage
 ## Setup
@@ -160,10 +144,10 @@ When you run your code, you should get two messages back:
 
 Currently the bot can work with two types of classifiers. These are Naive Bayes and Logistic Regression classifiers. The classifier preference switch (`classifierPreference`) allows you to specify your preference with regards to which classifier you'd prefer. This switch currently accepts the following options:
 
-| Value for `classifierPreference` | Resulting classifier used       |
-| ------------------------------ |:---------------------------------:|
-| naive_bayes                    | Naive Bayes Classifier            |
-| logistic_regression            | Logistic Regression Classifier    |
+| Value for `classifierPreference` |   Resulting classifier used    |
+| -------------------------------- | :----------------------------: |
+| naive_bayes                      |     Naive Bayes Classifier     |
+| logistic_regression              | Logistic Regression Classifier |
 
 ### Context Store
 
@@ -207,6 +191,10 @@ var bot = new Bot({contextStore: myContextStore});
 The current spec for `ContextStore` requires three functions to be implemented. These are `put, get and remove`. As long as these methods are provided, the bot does not care where the value for `contextStore` field in config comes from.
 
 If you were to run that code with some query resolves, you will find that the remove function never gets called. This is a work in progress as currently there is no limit as to how long a context must be remembered.
+
+# Reference Documentation
+
+* [Skills](./wiki/SKILLS.md)
 
 # Contributing
 
