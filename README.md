@@ -5,19 +5,20 @@ Framework for developing chat bot applications.
 
 <!-- vim-markdown-toc GFM -->
 * [Usage](#usage)
-	* [Setup](#setup)
-	* [Code Tutorial](#code-tutorial)
-		* [Initialize](#initialize)
-		* [Train](#train)
-		* [Add Skills](#add-skills)
-		* [Resolve queries](#resolve-queries)
-		* [Chainable methods](#chainable-methods)
-	* [Configuration Options](#configuration-options)
-		* [Context Store](#context-store)
-		* [Classifier](#classifier)
-	* [Extending bot](#extending-bot)
-		* [Context management](#context-management)
-		* [Custom Classifier](#custom-classifier)
+  * [Setup](#setup)
+  * [Code Tutorial](#code-tutorial)
+    * [Initialize](#initialize)
+    * [Train](#train)
+    * [Add Skills](#add-skills)
+    * [Resolve queries](#resolve-queries)
+	* [Chainable methods](#chainable-methods)
+  * [Configuration Options](#configuration-options)
+    * [Context Store](#context-store)
+    * [Classifier](#classifier)
+  * [Extending bot](#extending-bot)
+    * [Context management](#context-management)
+	* [Custom Classifier](#custom-classifier)
+* [Reference Documentation](#reference-documentation)
 * [Contributing](#contributing)
 
 <!-- vim-markdown-toc -->
@@ -242,6 +243,10 @@ var bot = new Bot({ classifier: myClassifier });
 ```
 
 I'd love to see your implementation of the talkify classifier. If you have extended the interface and successfully implemented your classifier give me a shout! I'd be delighted to know your experience using this library.
+
+# Reference Documentation
+
+* [Skills](./wiki/SKILLS.md)
 
 # Contributing
 
