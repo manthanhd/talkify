@@ -571,7 +571,90 @@ describe('Bot', function () {
 
                 return bot.resolve(123, "kiwi", resolved);
             });
+        });
 
+        it('resolves to the same skill that locked the conversation', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 1}]);
+                if (sentence === 'Hi.') return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+                    firstRun = false;
+                    return next();
+                }
+
+                return done();
+            }));
+
+            var fakeAnotherMyTopicSkill = new Skill('myfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                return done('should not have called this topic');
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeAnotherMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                });
+            });
+        });
+
+        it('lockConversationForNext only lasts for a single next conversation', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 1}]);
+                if (sentence === 'Hi.') return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+                    firstRun = false;
+                    context.runs = 1;
+                    return next();
+                }
+
+                context.runs = 2;
+
+                return next();
+            }));
+
+            var fakeAnotherMyTopicSkill = new Skill('myfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(firstRun).toBe(false);
+                expect(context.runs).toBe(2);
+                return done();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeAnotherMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                    return bot.resolve(123, "Hi.", function (err, messages) {
+                        expect(err).toNotExist();
+                    });
+                });
+            });
         });
     });
 
