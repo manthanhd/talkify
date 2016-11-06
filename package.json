@@ -24,7 +24,7 @@
   "dependencies": {
     "async": "^2.1.2",
     "talkify-classifier": "^1.0.2",
-    "talkify-natural-classifier": "^1.0.2"
+    "talkify-natural-classifier": "^1.0.3"
   },
   "devDependencies": {
     "coveralls": "^2.11.14",
