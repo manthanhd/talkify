@@ -60,15 +60,21 @@ The request object serves to provide data about the request itself. Currently, t
 
 #### Response
 
+**response.message**
+
 The response object can be used to respond to the query from the skill. Basic usage to respond with a message is:
 
 ```javascript
 response.message = new Message('SingleLine', 'Hey there!');
 ```
 
+**response.next()**
+
 Once you have responded to a message, you may want to do something else too. That is fine, as long as you remember to call the next() function which is passed in as the fourth parameter to the apply function. 
 
 **Make sure you call next() or else the bot will never know that the skill has finished processing the request.**
+
+**response.final()**
 
 All skills are resolved and executed as part of a skill resolution chain. This is true especially when the bot is processing multi-sentence requests. However, sometimes, you may want to set a final message to the response, preventing the rest of the execution chain from responding. This can be achieved by calling the `final()` function within the response object. Basic usage is like so:
 
@@ -77,6 +83,22 @@ response.message = new SingleLineMessage('Sorry I do not understand what you are
 response.final();
 response.next();
 ```
+
+**response.lockConversationForNext()**
+
+If your skill requires more information from the user, you can use the follow-up feature. This can be achieved by acquiring a lock on the conversation for the next call. You can use this feature like so:
+ 
+ ```javascript
+response.lockConversationForNext();
+ ```
+ 
+This tells the bot to lock the conversation for the skill you are in such that the next time bot gets a message from the end-user, it sends the request straight to your skill without resolving the topic at all.
+
+However, keep in mind that as the method name suggests, the `lockConversationForNext` method only reserves the lock for the next one call. The lock gets released as soon as your skill is called the next time. If you need yet more information, you will have to call that method again.
+
+As a best practice, make sure you provide a prompt to the user before you call the `lockConversationForNext` by setting a message on `response.message`. This will help the end-user see what he/she is being asked for.
+
+Also, as a side-note, when `lockConversationForNext` is called, the bot abandons execution of the rest of the skill chain for multi-sentence messages. Hence, there is no need to call `response.final()` after acquiring a lock.
 
 ## Adding skill
 
