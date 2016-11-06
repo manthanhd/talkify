@@ -33,7 +33,9 @@ var helpSkill = new Skill(skillName, topicName, function ApplyFn(context, reques
 });
 ```
 
-A skill name is expected to be unique where as at the same time, multiple skills can work with the same topic name. For every skill, an apply function must be defined.
+A skill name is expected to be unique. However, please note that multiple skills (with different names, of course) can work with the same topic name at different confidence levels (see [Adding Skill](#adding-skill)).
+
+For every skill, an apply function must be defined.
 
 ### The apply function
 
@@ -56,7 +58,7 @@ The request object serves to provide data about the request itself. Currently, t
 | id        | String    | Correspondance ID of the request                      |
 | message   | Message   | Message object representing the incoming message      |
 | sentence  | Object    | Object containing `all[]` array containing all sentences in the request, `current` string representing the current sentence that is being processed and `index` number representing the index within the sentence array of the current sentence that is being processed.     |
-| skill  | Object    | Object containing `all[]` array containing all skills resolved as part of the request, `current` Skill representing the current sentence that is being processed and `index` number representing the index within the skill array of the current skill that is being processed.     |
+| skill     | Object    | Object containing `all[]` array containing all skills resolved as part of the request, `current` Skill representing the current sentence that is being processed and `index` number representing the index within the skill array of the current skill that is being processed.     |
 
 #### Response
 
