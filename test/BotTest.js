@@ -656,6 +656,42 @@ describe('Bot', function () {
                 });
             });
         });
+
+        it('lock information is not available to the skill', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return callback(undefined, [{label: 'mytopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+
+                    expect(context.lock).toNotExist();
+
+                    firstRun = false;
+                    context.runs = 1;
+                    return next();
+                }
+
+                expect(context.lock).toNotExist();
+                return done();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                });
+            });
+        });
     });
 
     describe('getContextStore', function () {
