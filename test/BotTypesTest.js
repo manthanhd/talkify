@@ -223,7 +223,7 @@ describe('Skill', function() {
 
         };
         var skill = new Skill('name', 'topic', skillFn);
-
+        expect(skill.name).toBe('name');
         expect(skill.topic).toBe('topic');
         expect(skill.apply).toBe(skillFn);
         done();
