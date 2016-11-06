@@ -518,6 +518,7 @@ describe('Bot', function () {
         });
 
         it('calls mapped undefined skill when skill cannot be found for a topic', function (done) {
+            const TrainingDocument = require('../lib/BotTypes').TrainingDocument;
             mockery.deregisterAll();
             mockery.disable();
 
@@ -530,6 +531,7 @@ describe('Bot', function () {
             bot.addSkill(fakeMyTopicSkill);
 
             var resolved = function (err, messages) {
+                console.log(messages);
                 expect(err).toNotExist();
 
                 expect(messages).toExist();
