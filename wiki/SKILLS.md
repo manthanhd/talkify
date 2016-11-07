@@ -70,7 +70,7 @@ The response object can be used to respond to the query from the skill. Basic us
 response.message = new Message('SingleLine', 'Hey there!');
 ```
 
-**response.next()**
+**next()**
 
 Once you have responded to a message, you may want to do something else too. That is fine, as long as you remember to call the next() function which is passed in as the fourth parameter to the apply function. 
 
@@ -102,6 +102,43 @@ As a best practice, make sure you provide a prompt to the user before you call t
 
 Also, as a side-note, when `lockConversationForNext` is called, the bot abandons execution of the rest of the skill chain for multi-sentence messages. Hence, there is no need to call `response.final()` after acquiring a lock.
 
+**response.send(message, isFinal)**
+
+The `send` method is a wrapper for `response.message` and `next()` calls. It accepts two parameters, namely `message` and `isFinal`. The `message` parameter allows you to pass in the message. Passing a message object here has the same effect as doing `response.message = message`.
+ 
+The second `isFinal` parameter is there to allow you to mark response as final. Here, instead of doing `response.final()` separately, you can simply pass in true as part of the second parameter. 
+
+It is merely there for convenience, allowing you to write cleaner code. Here's how it replaces the old way of doing things:
+
+```javascript
+response.message = new Message(...);
+response.final();
+return next();
+```
+
+with the new way of doing things:
+
+```javascript
+return response.send(new Message(...), true);
+```
+
+**Pro Tip:**
+
+You can chain methods to simplify your statements. For instance, the below:
+
+```javascript
+return response.lockConversationForNext().final().send(new Message(...));
+```
+
+has the same effect as:
+
+```javascript
+response.lockConversationForNext();
+response.final();
+response.message = new Message(...);
+return next();
+```
+
 ## Adding skill
 
 For every topic the bot has been trained for, it must have a corresponding skill that it can call to resolve that topic. Thus, the number of skills must be *at least* equal to the number of topics. At a basic level, a skill can be added to the bot like so:
@@ -127,6 +164,22 @@ bot.addSkill(skillC, 60);
 ```
 
 In the above example, `skillC` gets executed when the bot is at least 60% confident in its topic resolution, `skillB` when it is 40% confident and `skillA` below 40%. Notice that we did not need to specify confidence level for `skillA` because when skills are added, the default minimum confidence level at which they are executed is always 0.
+
+**Pro Tip:**
+
+The `addSkill` method is chainable. This means that doing the following:
+
+```javascript
+bot.addSkill(skill1).addSkill(skill2).addSkill(skill3);
+```
+
+will have the same effect as:
+
+```javascript
+bot.addSkill(skill1);
+bot.addSkill(skill2);
+bot.addSkill(skill3);
+```
 
 ## Helpers
 
