@@ -102,24 +102,21 @@ As a best practice, make sure you provide a prompt to the user before you call t
 
 Also, as a side-note, when `lockConversationForNext` is called, the bot abandons execution of the rest of the skill chain for multi-sentence messages. Hence, there is no need to call `response.final()` after acquiring a lock.
 
-**response.send(message, isFinal)**
+**response.send(message)**
 
-The `send` method is a wrapper for `response.message` and `next()` calls. It accepts two parameters, namely `message` and `isFinal`. The `message` parameter allows you to pass in the message. Passing a message object here has the same effect as doing `response.message = message`.
+The `send` method is a wrapper for `response.message` and `next()` calls. It accepts a single parameter, namely `message` where you can pass in a `Message` object. Passing a `Message` object here has the same effect as doing `response.message = message`.
  
-The second `isFinal` parameter is there to allow you to mark response as final. Here, instead of doing `response.final()` separately, you can simply pass in true as part of the second parameter. 
-
 It is merely there for convenience, allowing you to write cleaner code. Here's how it replaces the old way of doing things:
 
 ```javascript
 response.message = new Message(...);
-response.final();
 return next();
 ```
 
 with the new way of doing things:
 
 ```javascript
-return response.send(new Message(...), true);
+return response.send(new Message(...));
 ```
 
 **Pro Tip:**

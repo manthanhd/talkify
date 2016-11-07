@@ -717,35 +717,6 @@ describe('Bot', function () {
             });
         });
 
-        it('works with response.send to send message with final parameter and next', function (done) {
-            var mockClassifier = mockClassifierWithMockClassifierFactory();
-            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
-                return sentence === 'Hello.' ? callback(undefined, [{label: 'mytopic', value: 1}]) : callback(undefined, [{label: 'myanothertopic', value: 1}]);
-            });
-
-            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
-                return response.send(new Message('SingleLine', 'Hello there!'), true);
-            }));
-
-            var fakeMyTopicSkill2 = new Skill('myfakeskill2', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
-                return done('should not have executed this skill');
-            }));
-
-            var bot = new Bot();
-            bot.addSkill(fakeMyTopicSkill);
-            bot.addSkill(fakeMyTopicSkill2);
-
-            return bot.resolve(123, "Hello. Hi!", function (err, messages) {
-                expect(err).toNotExist();
-
-                expect(messages).toExist();
-                expect(messages.length).toBe(1);
-                expect(messages[0].type).toBe('SingleLine');
-                expect(messages[0].content).toBe('Hello there!');
-                return done();
-            });
-        });
-
         it('final() method is chainable with same effect as send(message, true)', function (done) {
             var mockClassifier = mockClassifierWithMockClassifierFactory();
             mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
