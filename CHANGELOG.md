@@ -2,7 +2,7 @@
 
 High level features between major versions are outlined here.
 
-## 2016-10-25 Version 2.0.0 @manthanhd
+## 2016-11-09 Version 2.0.0 @manthanhd
 
 * Methods in the `Response` object are chainable.
 * Skills can now lock a conversation for one request/response in order to process a follow-up question.
