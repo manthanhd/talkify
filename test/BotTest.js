@@ -437,8 +437,7 @@ describe('Bot', function () {
             });
 
             var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
-                response.message = new SingleLineMessage('mytopic response');
-                response.final();
+                response.final().send(new SingleLineMessage('mytopic response'));
             }));
 
             var fakeMyAnotherTopicSkill = new Skill('myanotherfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
@@ -518,6 +517,7 @@ describe('Bot', function () {
         });
 
         it('calls mapped undefined skill when skill cannot be found for a topic', function (done) {
+            const TrainingDocument = require('../lib/BotTypes').TrainingDocument;
             mockery.deregisterAll();
             mockery.disable();
 
@@ -571,7 +571,216 @@ describe('Bot', function () {
 
                 return bot.resolve(123, "kiwi", resolved);
             });
+        });
 
+        it('resolves to the same skill that locked the conversation', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 1}]);
+                if (sentence === 'Hi.') return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+                    firstRun = false;
+                    return next();
+                }
+
+                return done();
+            }));
+
+            var fakeAnotherMyTopicSkill = new Skill('myfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                return done('should not have called this topic');
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeAnotherMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                });
+            });
+        });
+
+        it('lockConversationForNext only lasts for a single next conversation', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 1}]);
+                if (sentence === 'Hi.') return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+                    firstRun = false;
+                    context.runs = 1;
+                    return next();
+                }
+
+                context.runs = 2;
+
+                return next();
+            }));
+
+            var fakeAnotherMyTopicSkill = new Skill('myfakeskill', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(firstRun).toBe(false);
+                expect(context.runs).toBe(2);
+                return done();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeAnotherMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                    return bot.resolve(123, "Hi.", function (err, messages) {
+                        expect(err).toNotExist();
+                    });
+                });
+            });
+        });
+
+        it('lock information is not available to the skill', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return callback(undefined, [{label: 'mytopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    response.message = new SingleLineMessage('I need more information please!');
+                    response.lockConversationForNext();
+
+                    expect(context.lock).toNotExist();
+
+                    firstRun = false;
+                    context.runs = 1;
+                    return next();
+                }
+
+                expect(context.lock).toNotExist();
+                return done();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                });
+            });
+        });
+
+        it('works with response.send to send message and next', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return callback(undefined, [{label: 'mytopic', value: 1}]);
+            });
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                return response.send(new Message('SingleLine', 'Hello there!'));
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].type).toBe('SingleLine');
+                expect(messages[0].content).toBe('Hello there!');
+                return done();
+            });
+        });
+
+        it('final() method is chainable with same effect as send(message, true)', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return sentence === 'Hello.' ? callback(undefined, [{label: 'mytopic', value: 1}]) : callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                expect(response.final()).toBe(response);
+                return response.final().send(new Message('SingleLine', 'Hello there!'));
+            }));
+
+            var fakeMyTopicSkill2 = new Skill('myfakeskill2', 'myanothertopic', expect.createSpy().andCall(function (context, request, response, next) {
+                return done('should not have executed this skill');
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeMyTopicSkill2);
+
+            return bot.resolve(123, "Hello. Hi!", function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].type).toBe('SingleLine');
+                expect(messages[0].content).toBe('Hello there!');
+                return done();
+            });
+        });
+
+        it('lockConversationForNext method is chainable', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return callback(undefined, [{label: 'mytopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                if (firstRun === true) {
+                    var returnVal = response.lockConversationForNext();
+                    expect(returnVal).toBe(response);
+
+                    expect(context.lock).toNotExist();
+
+                    firstRun = false;
+                    context.runs = 1;
+                    return response.lockConversationForNext().send(new SingleLineMessage('I need more information please!'));
+                }
+
+                expect(context.lock).toNotExist();
+                return done();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+
+            return bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toNotExist();
+
+                return bot.resolve(123, "Hi.", function (err, messages) {
+                    expect(err).toNotExist();
+                });
+            });
         });
     });
 

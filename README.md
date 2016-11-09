@@ -26,7 +26,7 @@ Framework for developing chat bot applications.
 # Usage
 ## Setup
 
-Make sure you have node and npm installed. As of now, this module has been tested against 0.10 node version within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline.
+Make sure you have node and npm installed. As of now, this module has been tested against 0.12 node version within the [Travis CI](https://travis-ci.org/manthanhd/talkify) pipeline.
 
 Simply run `npm install` command to install:
 

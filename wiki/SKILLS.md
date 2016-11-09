@@ -33,7 +33,9 @@ var helpSkill = new Skill(skillName, topicName, function ApplyFn(context, reques
 });
 ```
 
-A skill name is expected to be unique where as at the same time, multiple skills can work with the same topic name. For every skill, an apply function must be defined.
+A skill name is expected to be unique. However, please note that multiple skills (with different names, of course) can work with the same topic name at different confidence levels (see [Adding Skill](#adding-skill)).
+
+For every skill, an apply function must be defined.
 
 ### The apply function
 
@@ -56,9 +58,11 @@ The request object serves to provide data about the request itself. Currently, t
 | id        | String    | Correspondance ID of the request                      |
 | message   | Message   | Message object representing the incoming message      |
 | sentence  | Object    | Object containing `all[]` array containing all sentences in the request, `current` string representing the current sentence that is being processed and `index` number representing the index within the sentence array of the current sentence that is being processed.     |
-| skill  | Object    | Object containing `all[]` array containing all skills resolved as part of the request, `current` Skill representing the current sentence that is being processed and `index` number representing the index within the skill array of the current skill that is being processed.     |
+| skill     | Object    | Object containing `all[]` array containing all skills resolved as part of the request, `current` Skill representing the current sentence that is being processed and `index` number representing the index within the skill array of the current skill that is being processed.     |
 
 #### Response
+
+**response.message**
 
 The response object can be used to respond to the query from the skill. Basic usage to respond with a message is:
 
@@ -66,9 +70,13 @@ The response object can be used to respond to the query from the skill. Basic us
 response.message = new Message('SingleLine', 'Hey there!');
 ```
 
+**next()**
+
 Once you have responded to a message, you may want to do something else too. That is fine, as long as you remember to call the next() function which is passed in as the fourth parameter to the apply function. 
 
 **Make sure you call next() or else the bot will never know that the skill has finished processing the request.**
+
+**response.final()**
 
 All skills are resolved and executed as part of a skill resolution chain. This is true especially when the bot is processing multi-sentence requests. However, sometimes, you may want to set a final message to the response, preventing the rest of the execution chain from responding. This can be achieved by calling the `final()` function within the response object. Basic usage is like so:
 
@@ -76,6 +84,56 @@ All skills are resolved and executed as part of a skill resolution chain. This i
 response.message = new SingleLineMessage('Sorry I do not understand what you are trying to say.');
 response.final();
 response.next();
+```
+
+**response.lockConversationForNext()**
+
+If your skill requires more information from the user, you can use the follow-up feature. This can be achieved by acquiring a lock on the conversation for the next call. You can use this feature like so:
+ 
+ ```javascript
+response.lockConversationForNext();
+ ```
+ 
+This tells the bot to lock the conversation for the skill you are in such that the next time bot gets a message from the end-user, it sends the request straight to your skill without resolving the topic at all.
+
+However, keep in mind that as the method name suggests, the `lockConversationForNext` method only reserves the lock for the next one call. The lock gets released as soon as your skill is called the next time. If you need yet more information, you will have to call that method again.
+
+As a best practice, make sure you provide a prompt to the user before you call the `lockConversationForNext` by setting a message on `response.message`. This will help the end-user see what he/she is being asked for.
+
+Also, as a side-note, when `lockConversationForNext` is called, the bot abandons execution of the rest of the skill chain for multi-sentence messages. Hence, there is no need to call `response.final()` after acquiring a lock.
+
+**response.send(message)**
+
+The `send` method is a wrapper for `response.message` and `next()` calls. It accepts a single parameter, namely `message` where you can pass in a `Message` object. Passing a `Message` object here has the same effect as doing `response.message = message`.
+ 
+It is merely there for convenience, allowing you to write cleaner code. Here's how it replaces the old way of doing things:
+
+```javascript
+response.message = new Message(...);
+return next();
+```
+
+with the new way of doing things:
+
+```javascript
+return response.send(new Message(...));
+```
+
+**Pro Tip:**
+
+You can chain methods to simplify your statements. For instance, the below:
+
+```javascript
+return response.lockConversationForNext().final().send(new Message(...));
+```
+
+has the same effect as:
+
+```javascript
+response.lockConversationForNext();
+response.final();
+response.message = new Message(...);
+return next();
 ```
 
 ## Adding skill
@@ -103,6 +161,22 @@ bot.addSkill(skillC, 60);
 ```
 
 In the above example, `skillC` gets executed when the bot is at least 60% confident in its topic resolution, `skillB` when it is 40% confident and `skillA` below 40%. Notice that we did not need to specify confidence level for `skillA` because when skills are added, the default minimum confidence level at which they are executed is always 0.
+
+**Pro Tip:**
+
+The `addSkill` method is chainable. This means that doing the following:
+
+```javascript
+bot.addSkill(skill1).addSkill(skill2).addSkill(skill3);
+```
+
+will have the same effect as:
+
+```javascript
+bot.addSkill(skill1);
+bot.addSkill(skill2);
+bot.addSkill(skill3);
+```
 
 ## Helpers
 
