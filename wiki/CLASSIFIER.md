@@ -165,3 +165,17 @@ var myClassifier = {
 };
 ```
 
+## Adding a custom classifier to Bot
+
+A custom classifier instance can be passed as part of the configuration object to the Bot during its instantiation. Here's a quick example:
+
+```javascript
+var myClassifier = {...}
+var options = {
+  classifier: myClassifier
+};
+var Bot = require('talkify').Bot;
+var myBot = new Bot(options);
+```
+
+Notice how the options object contains an attribute called `classifier` with the value set to the `myClassifier` variable.
