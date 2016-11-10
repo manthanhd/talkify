@@ -246,6 +246,7 @@ I'd love to see your implementation of the talkify classifier. If you have exten
 
 # Reference Documentation
 
+* [Classifier](./wiki/CLASSIFIER.md)
 * [Skills](./wiki/SKILLS.md)
 
 # Contributing
