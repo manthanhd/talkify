@@ -540,6 +540,36 @@ describe('Bot', function () {
             return bot.resolve(123, "kiwi", resolved);
         });
 
+        it('calls mapped undefined skill when skill with closest positive distance from defined minConfidence cannot be found for a topic', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                return callback(undefined, [{label: 'myanothertopic', value: 0.5}]);
+            });
+
+            var fakeMyTopicSkill = new Skill('myskill', undefined, expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var fakeAnotherTopicSkill = new Skill('myfakeanothertopicskill', 'myanothertopic', function(context, request, response) {
+                return done('should not have called this skill');
+            });
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill);
+            bot.addSkill(fakeAnotherTopicSkill, 0.8);
+
+            var resolved = function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].content).toBe('mytopic response');
+                done();
+            };
+            return bot.resolve(123, "kiwi", resolved);
+        });
+
         it('calls skills based on confidence level', function (done) {
             var fakeMyTopicSkill = new Skill('myskill', 'hello', expect.createSpy().andCall(function (context, request, response, next) {
                 response.message = new SingleLineMessage('mytopic response');
