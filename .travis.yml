@@ -9,7 +9,7 @@ branches:
   - master
 deploy:
   on:
-    branch: master
+    tags: true
   provider: npm
   skip_cleanup: true
   email: manthanhd@live.com
