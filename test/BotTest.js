@@ -151,6 +151,28 @@ describe('Bot', function () {
                 done();
             });
         });
+
+        it('requires optional finished callback', function(done) {
+            const bot = new Bot();
+            try {
+                bot.trainAll([{text: "hello", topic: "greeting"}]);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('throws errors synchronously when finished callback is not defined', function(done) {
+            try {
+                const bot = new Bot();
+                bot.trainAll(undefined);
+                done('should have failed');
+            } catch (e) {
+                expect(e).toExist();
+                expect(e).toBeA(TypeError);
+                done();
+            }
+        })
     });
 
     describe('addSkill', function () {
