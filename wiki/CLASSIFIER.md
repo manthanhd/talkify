@@ -179,3 +179,21 @@ var myBot = new Bot(options);
 ```
 
 Notice how the options object contains an attribute called `classifier` with the value set to the `myClassifier` variable.
+
+A single bot instance can accept multiple classifiers. This way you can have multiple classifiers, each specialised in a single topic. This generally results in more accurate classification over a broad range of topics.
+
+In order to add multiple classifiers, you must assign an array containing all your classifier objects to the `classifier` options attribute.
+
+```javascript
+var myClassifier1 = {...}
+var myClassifier2 = {...}
+var options = {
+  classifier: [myClassifier1, myClassifier2]
+};
+var Bot = require('talkify').Bot;
+var myBot = new Bot(options);
+```
+
+This will configure the myBot object to use two classifiers: `myClassifier1` and `myClassifier2`.
+
+For readability, you can optionally use `classifiers` options attribute instead of `classifier` attribute when specifying multiple classifiers.
