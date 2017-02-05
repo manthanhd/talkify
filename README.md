@@ -244,6 +244,8 @@ var bot = new Bot({ classifier: myClassifier });
 
 I'd love to see your implementation of the talkify classifier. If you have extended the interface and successfully implemented your classifier give me a shout! I'd be delighted to know your experience using this library.
 
+Since version 2.1.0, you can specify multiple classifiers for your bot. See [docs on classifier](./wiki/CLASSIFIER.md) for more info.
+
 # Reference Documentation
 
 * [Classifier](./wiki/CLASSIFIER.md)

@@ -62,6 +62,18 @@ describe('Bot', function () {
             expect(classifier).toBe(fakeClassifier);
             expect(classifier).toBeA(TalkifyClassifier);
         });
+
+        it('allows configuring multiple classifiers', function() {
+            var TalkifyClassifier = require('talkify-classifier');
+            var fakeClassifier1 = new TalkifyClassifier();
+            var fakeClassifier2 = new TalkifyClassifier();
+            var bot = new Bot({classifier: [fakeClassifier1, fakeClassifier2]});
+            var classifiers = bot.getClassifiers();
+            expect(classifiers).toExist();
+            expect(classifiers.length).toBe(2);
+            expect(classifiers[0]).toBe(fakeClassifier1);
+            expect(classifiers[1]).toBe(fakeClassifier2);
+        });
     });
 
     describe('train', function () {
@@ -834,6 +846,58 @@ describe('Bot', function () {
                 });
             });
         });
+
+        it('resolves across multiple classifiers', function(done) {
+            var fakeMyTopicSkill = new Skill('myskill', 'hello', expect.createSpy().andCall(function (context, request, response) {
+                var resolutionConfidence = request.skill.current.topic.confidence;
+                expect(resolutionConfidence).toBe(0.5);
+                return done();
+            }));
+
+            var TalkifyClassifier = require('talkify-classifier');
+            var fakeClassifier1 = new TalkifyClassifier();
+            fakeClassifier1.getClassifications = function(input, callback) {
+                return callback(undefined, [{label: 'hello', value: 0.2}]);
+            };
+
+            var fakeClassifier2 = new TalkifyClassifier();
+            fakeClassifier2.getClassifications = function(input, callback) {
+                return callback(undefined, [{label: 'hello', value: 0.5}]);
+            };
+
+            var bot = new Bot({classifiers: [fakeClassifier1, fakeClassifier2]});
+            bot.addSkill(fakeMyTopicSkill, 0.4);
+
+            return bot.resolve(1, 'hello this is a message', function(err, messages) {
+                // placeholder callback
+            });
+        });
+
+        it('prioritises low confidence definite resolution over high confidence indeterminate resolution', function(done) {
+            var fakeMyTopicSkill = new Skill('myskill', 'hello', expect.createSpy().andCall(function (context, request, response) {
+                var resolutionConfidence = request.skill.current.topic.confidence;
+                expect(resolutionConfidence).toBe(0.1);
+                return done();
+            }));
+
+            var TalkifyClassifier = require('talkify-classifier');
+            var fakeClassifier1 = new TalkifyClassifier();
+            fakeClassifier1.getClassifications = function(input, callback) {
+                return callback(undefined, [{label: 'hello', value: 0.1}]);
+            };
+
+            var fakeClassifier2 = new TalkifyClassifier();
+            fakeClassifier2.getClassifications = function(input, callback) {
+                return callback(undefined, [{label: undefined, value: 1}]);
+            };
+
+            var bot = new Bot({classifiers: [fakeClassifier1, fakeClassifier2]});
+            bot.addSkill(fakeMyTopicSkill);
+
+            return bot.resolve(1, 'hello this is a message', function(err, messages) {
+                // placeholder callback
+            });
+        });
     });
 
     describe('getContextStore', function () {
@@ -876,6 +940,16 @@ describe('Bot', function () {
             expect(classifier).toNotBeA(natural.LogisticRegressionClassifier);
             expect(classifier).toBe(fakeClassifier);
         });
+
+        it('returns last registered classifier', function() {
+            var TalkifyClassifier = require('talkify-classifier');
+            var fakeClassifier1 = new TalkifyClassifier();
+            var fakeClassifier2 = new TalkifyClassifier();
+            var bot = new Bot({classifier: [fakeClassifier1, fakeClassifier2]});
+            var classifier = bot.getClassifier();
+            expect(classifier).toExist();
+            expect(classifier).toBe(fakeClassifier2);
+        })
     });
 
     describe('chainableMethods', function () {
