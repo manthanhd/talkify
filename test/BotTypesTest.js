@@ -163,6 +163,16 @@ describe('TrainingDocument', function() {
             done();
         }
     });
+
+    it("allows for multiple text input for the same topic", function() {
+        var trainingDOcument = new TrainingDocument('topic', 'text1', 'text2', 'text3');
+        expect(trainingDOcument.topic).toBe('topic');
+        expect(trainingDOcument.text).toBeA(Array);
+        expect(trainingDOcument.text.length).toBe(3);
+        expect(trainingDOcument.text[0]).toBe('text1');
+        expect(trainingDOcument.text[1]).toBe('text2');
+        expect(trainingDOcument.text[2]).toBe('text3');
+    });
 });
 
 describe('Skill', function() {

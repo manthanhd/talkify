@@ -87,6 +87,34 @@ describe('Bot', function () {
             done();
         });
 
+        it('trains multiple documents when parameters are valid', function(done) {
+            const TalkifyClassifier = require('talkify-classifier');
+            var mockClassifier = new TalkifyClassifier();
+
+            expect.spyOn(mockClassifier, 'trainDocument').andCall(function(document, callback) {
+                return callback();
+            });
+
+            expect.spyOn(mockClassifier, 'initialize').andCall(function(callback) {
+                return callback();
+            });
+
+            var mockLrClassifier = {
+                LogisticRegressionClassifier: function () {
+                    return mockClassifier;
+                }
+            };
+
+            mockery.registerMock('talkify-natural-classifier', mockLrClassifier);
+
+            var bot = new Bot();
+            bot.train('topic', ['text1', 'text2', 'text3'], function () {
+                expect(mockClassifier.trainDocument.calls[0].arguments[0]).toEqual({text:['text1', 'text2', 'text3'], topic:'topic'});
+
+                done();
+            });
+        });
+
         it('throws TypeError when topic is undefined', function (done) {
             var bot = new Bot();
             try {
@@ -138,6 +166,36 @@ describe('Bot', function () {
             var bot = new Bot();
             bot.trainAll([{text: 'hello', topic: 'topic'}, {text: 'hello2', topic: 'topic2'}], function (err) {
                 expect(err).toNotExist();
+                done();
+            });
+        });
+
+        it('trains document with multiple textx when parameters are valid', function(done) {
+            // var mockClassifier = mockClassifierWithMockClassifierFactory();
+            const TalkifyClassifier = require('talkify-classifier');
+            var mockClassifier = new TalkifyClassifier();
+            mockClassifier.trainDocument = function(document, callback) {
+                return callback(undefined, true);
+            };
+            mockClassifier.initialize = function(callback) {
+                return callback();
+            };
+            expect.spyOn(mockClassifier, 'trainDocument').andCallThrough();
+            expect.spyOn(mockClassifier, 'initialize').andCallThrough();
+
+            var mockLrClassifier = {
+                LogisticRegressionClassifier: function () {
+                    return mockClassifier;
+                }
+            };
+
+            mockery.registerMock('talkify-natural-classifier', mockLrClassifier);
+
+            var bot = new Bot();
+            return bot.trainAll([{text: ['text1', 'text2', 'text3'], topic: 'topic'}], function (err) {
+                expect(err).toNotExist();
+                expect(mockClassifier.trainDocument.calls[0].arguments[0]).toEqual([{text:['text1', 'text2', 'text3'], topic:'topic'}]);
+
                 done();
             });
         });
