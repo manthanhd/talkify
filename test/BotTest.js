@@ -531,6 +531,7 @@ describe('Bot', function () {
             var firstRun = true;
 
             var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                console.log("skill should not be called");
                 if (firstRun === true) {
                     expect(context.something).toNotExist();
                 } else {
