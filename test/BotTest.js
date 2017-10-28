@@ -551,6 +551,36 @@ describe('Bot', function () {
             });
         });
 
+        it('returns skills could not be resolved error when it couldn\'t resolve skills when minConfidence is used as options object', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 0.2}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                console.log("skill should not be called");
+                if (firstRun === true) {
+                    expect(context.something).toNotExist();
+                } else {
+                    expect(context.something).toExist();
+                }
+
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill, {minConfidence: 1});
+
+            bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toExist();
+                done();
+            });
+        });
+
         it('calls mapped undefined skill when skill cannot be found for a topic', function (done) {
             const TrainingDocument = require('../lib/BotTypes').TrainingDocument;
             mockery.deregisterAll();
