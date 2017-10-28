@@ -21,19 +21,6 @@ function mockClassifierWithMockClassifierFactory() {
     return mockClassifier;
 }
 
-function mockClassifierFactory() {
-    var mockClassifierFactoryInstance = {
-        newClassifier: expect.createSpy()
-    };
-
-    var MockClassifierFactory = function () {
-        return mockClassifierFactoryInstance;
-    };
-
-    mockery.registerMock('./ClassifierFactory', MockClassifierFactory);
-    return mockClassifierFactoryInstance;
-}
-
 describe('Bot', function () {
     const BotTypes = require('../lib/BotTypes');
     const SingleLineMessage = BotTypes.SingleLineMessage;
