@@ -198,6 +198,45 @@ If you prefer to use IBM Watson's Natural Language Processing Classifier instead
 
 If you think yours work better, give me a shout! I'd be delighted to know and possibly work towards implementing it within the core module.
 
+### Skill resolution strategy
+
+To provide your own implementation of Skill Resolution Strategy, simply pass the function definition in configuration object as follows:
+
+```javascript
+var mySkillResolutionStrategy = function() {
+    this.addSkill = function (skill, options) { ... };
+    this.getSkills = function () {...};
+    this.resolve = function (err, resolutionContext, callback) {
+        ...
+    };
+    return this;
+};
+
+var bot = new Bot({
+    skillResolutionStrategy: mySkillResolutionStrategy
+});
+```
+
+The bot core will create an instance of your skill resolution strategy object on init and will use it as single instance across all resolutions.
+
+### Topic resolution strategy
+
+To provide your own implementation of Topic Resolution Strategy, simply pass the function definition in configuration object as follows:
+
+```javascript
+var myTopicResolutionStrategy = function() {
+    this.collect = function (classification, classificationContext, callback) { callback() };
+    this.resolve = function (callback) { callback([{name: "topic_name", confidence: 0.5]) };
+    return this;
+};
+
+var bot = new Bot({
+    topicResolutionStrategy: myTopicResolutionStrategy
+});
+```
+
+The bot core will create a new instance of your topic resolution strategy for every call it receives into the resolve method.
+
 ## Extending bot
 
 ### Context management
@@ -245,6 +284,66 @@ var bot = new Bot({ classifier: myClassifier });
 I'd love to see your implementation of the talkify classifier. If you have extended the interface and successfully implemented your classifier give me a shout! I'd be delighted to know your experience using this library.
 
 Since version 2.1.0, you can specify multiple classifiers for your bot. See [docs on classifier](./wiki/CLASSIFIER.md) for more info.
+
+### Skill Resolution Strategy
+
+A skill resolution strategy is a component that is able to output a skill, given a resolution context. A resolution context is an object comprised of a list of topics and the original sentence, essential ingredients needed to resolve a skill.
+
+```
+ +-------------+
+ |  Topic  | | |
+ +---------+ | +----> +--------------+
+ |-----------+ |      |              |
+ +-------------+      |  Skill       |      +---------+
+                      |  Resolution  +----> |  Skill  |
+                      |  Strategy    |      +---------+
+ +------------+       |              |
+ |  Sentence  | +---> +--------------+
+ +------------+
+```
+
+### Topic Resolution Strategy
+
+A topic resolution strategy allows you to plug in custom logic to resolve a topic, given classification data. When plugging in a custom topic resolution strategy, the bot core expects the function definition to be passed in instead of result of the function execution. This is because the topic resolution strategy object is constructed using `new` for every call to `resolve` method. 
+
+The process of topic resolution works in two parts:
+
+#### Step 1
+
+First stage of the topic resolution process is the collection phase. Here, the bot core sends the classification for every classification set returned from the classifier along with any required context. The bot core also passes in a callback function which is required to be invoked to let the bot core know that the invocation was successful.
+
+```
++------------------+ +
+|  Classification  | |
++------------------+ |
+                     |        +-----------+
+                     +-------->  Collect  |
+                     |        +-----------+
+       +-----------+ |
+       |  Context  | |
+       +-----------+ +
+```
+
+#### Step 2
+
+Second stage is the resolution phase. Here, the bot core is expecting a list of classifications to be returned. The resolution is called only after all collections have finished executing.
+
+```
++-----------+     +---------+-+-+
+|  Resolve  +---->+  Topic  | | |
++-----------+     +---------+ | |
+                  |-----------+ |
+                  +-------------+
+```
+
+A topic resolution strategy object must expose two methods:
+
+* collect
+* resolve
+
+The collect method is called everytime a classifier returns classification(s). It is called with `classification, context, callback` signature. The `classification` object contains the classification returned from the classifier (or set of classifiers if using quorums). The `context` object is the object containing request context. The last parameter `callback` is the function that must be invoked to let the bot core know that you have finished collecting the passed in parameters.
+
+The resolve method is called once after the bot core is done calling `collect` on your topic resolution strategy. This is the final call from bot core and is meant to collect topic resolution information. The `resolve` method is called with a `callback` parameter. This is the callback function that must be called with two parameters `error, topics`. The error parameter must be defined as an error object in case an error has occurred when resolving the topic. In any other case, this object must be `undefined`. The second `topics` parameter must be an array of topics resolved by the resolution strategy. 
 
 # Reference Documentation
 
