@@ -916,6 +916,51 @@ describe('Bot', function () {
                 // placeholder callback
             });
         });
+
+        it('uses configured skill resolution strategy', function (done) {
+            var fakeMyTopicSkill = new Skill('myskill', 'hello', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var calls = 0;
+
+            var mockSkillResolutionStrategy = function() {
+                const skills = [];
+                this.addSkill = function(skill, options) {
+                    calls++;
+                    expect(skill).toBe(fakeMyTopicSkill);
+                    return skills.push(skill);
+                };
+
+                this.getSkills = function() {
+
+                };
+
+                this.resolve = function(err, resolutionContext, callback) {
+                    calls++;
+                    expect(err).toBe(null);
+                    return callback(undefined, fakeMyTopicSkill);
+                };
+
+                return this;
+            };
+
+            var bot = new Bot({skillResolutionStrategy: mockSkillResolutionStrategy()});
+
+            bot.addSkill(fakeMyTopicSkill, 0.4);
+
+            var resolved = function (err, messages) {
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].content).toBe('mytopic response');
+                done();
+            };
+
+            return bot.resolve(123, "kiwi", resolved);
+        });
     });
 
     describe('getContextStore', function () {
