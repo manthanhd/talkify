@@ -227,6 +227,21 @@ describe('Bot', function () {
                 done(e);
             }
         });
+
+        it('adds skills to all topics listed in array', function(done) {
+            var bot = new Bot();
+            try {
+                bot.addSkill(new Skill('name', ['topic', 'topic2'], function () {
+                }), 50);
+
+                var skills = bot.getSkills();
+                expect(skills.length).toBe(2);
+                expect(skills).toBeA(Array);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
     });
 
     describe('resolve', function () {
@@ -951,6 +966,7 @@ describe('Bot', function () {
             bot.addSkill(fakeMyTopicSkill, 0.4);
 
             var resolved = function (err, messages) {
+                expect(calls).toBe(2);
                 expect(err).toNotExist();
 
                 expect(messages).toExist();
@@ -960,6 +976,37 @@ describe('Bot', function () {
             };
 
             return bot.resolve(123, "kiwi", resolved);
+        });
+
+        it('uses configured topic resolution strategy', function(done) {
+            var calls = 0;
+            var mockTopicResolutionStrategy = function() {
+                const classifications = [];
+
+                this.collect = function(classification, classificationContext, callback) {
+                    calls++;
+                    classifications.push(classification);
+                    return callback();
+                };
+
+                this.resolve = function(callback) {
+                    calls++;
+                    var topics = [];
+
+                    classifications.forEach(function(classification) {
+                        topics.push({name: classification.label, confidence: classification.value});
+                    });
+
+                    return callback(undefined, topics);
+                };
+
+                return this;
+            };
+            var bot = new Bot({topicResolutionStrategy: mockTopicResolutionStrategy});
+            bot.resolve(1, 'something', function(err){
+                expect(calls).toBe(2);
+                done();
+            });
         });
     });
 
