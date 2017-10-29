@@ -226,7 +226,7 @@ describe('Bot', function () {
             } catch (e) {
                 done(e);
             }
-        })
+        });
     });
 
     describe('resolve', function () {
