@@ -21,19 +21,6 @@ function mockClassifierWithMockClassifierFactory() {
     return mockClassifier;
 }
 
-function mockClassifierFactory() {
-    var mockClassifierFactoryInstance = {
-        newClassifier: expect.createSpy()
-    };
-
-    var MockClassifierFactory = function () {
-        return mockClassifierFactoryInstance;
-    };
-
-    mockery.registerMock('./ClassifierFactory', MockClassifierFactory);
-    return mockClassifierFactoryInstance;
-}
-
 describe('Bot', function () {
     const BotTypes = require('../lib/BotTypes');
     const SingleLineMessage = BotTypes.SingleLineMessage;
@@ -239,7 +226,22 @@ describe('Bot', function () {
             } catch (e) {
                 done(e);
             }
-        })
+        });
+
+        it('adds skills to all topics listed in array', function(done) {
+            var bot = new Bot();
+            try {
+                bot.addSkill(new Skill('name', ['topic', 'topic2'], function () {
+                }), 50);
+
+                var skills = bot.getSkills();
+                expect(skills.length).toBe(2);
+                expect(skills).toBeA(Array);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
     });
 
     describe('resolve', function () {
@@ -531,6 +533,7 @@ describe('Bot', function () {
             var firstRun = true;
 
             var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                console.log("skill should not be called");
                 if (firstRun === true) {
                     expect(context.something).toNotExist();
                 } else {
@@ -543,6 +546,36 @@ describe('Bot', function () {
 
             var bot = new Bot();
             bot.addSkill(fakeMyTopicSkill, 1);
+
+            bot.resolve(123, "Hello.", function (err, messages) {
+                expect(err).toExist();
+                done();
+            });
+        });
+
+        it('returns skills could not be resolved error when it couldn\'t resolve skills when minConfidence is used as options object', function (done) {
+            var mockClassifier = mockClassifierWithMockClassifierFactory();
+            mockClassifier.getClassifications = expect.createSpy().andCall(function (sentence, callback) {
+                if (sentence === 'Hello.') return callback(undefined, [{label: 'mytopic', value: 0.2}]);
+                return callback(undefined, [{label: 'myanothertopic', value: 1}]);
+            });
+
+            var firstRun = true;
+
+            var fakeMyTopicSkill = new Skill('myfakeskill', 'mytopic', expect.createSpy().andCall(function (context, request, response, next) {
+                console.log("skill should not be called");
+                if (firstRun === true) {
+                    expect(context.something).toNotExist();
+                } else {
+                    expect(context.something).toExist();
+                }
+
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var bot = new Bot();
+            bot.addSkill(fakeMyTopicSkill, {minConfidence: 1});
 
             bot.resolve(123, "Hello.", function (err, messages) {
                 expect(err).toExist();
@@ -896,6 +929,83 @@ describe('Bot', function () {
 
             return bot.resolve(1, 'hello this is a message', function(err, messages) {
                 // placeholder callback
+            });
+        });
+
+        it('uses configured skill resolution strategy', function (done) {
+            var fakeMyTopicSkill = new Skill('myskill', 'hello', expect.createSpy().andCall(function (context, request, response, next) {
+                response.message = new SingleLineMessage('mytopic response');
+                return next();
+            }));
+
+            var calls = 0;
+
+            var mockSkillResolutionStrategy = function() {
+                const skills = [];
+                this.addSkill = function(skill, options) {
+                    calls++;
+                    expect(skill).toBe(fakeMyTopicSkill);
+                    return skills.push(skill);
+                };
+
+                this.getSkills = function() {
+
+                };
+
+                this.resolve = function(err, resolutionContext, callback) {
+                    calls++;
+                    expect(err).toBe(null);
+                    return callback(undefined, fakeMyTopicSkill);
+                };
+
+                return this;
+            };
+
+            var bot = new Bot({skillResolutionStrategy: mockSkillResolutionStrategy()});
+
+            bot.addSkill(fakeMyTopicSkill, 0.4);
+
+            var resolved = function (err, messages) {
+                expect(calls).toBe(2);
+                expect(err).toNotExist();
+
+                expect(messages).toExist();
+                expect(messages.length).toBe(1);
+                expect(messages[0].content).toBe('mytopic response');
+                done();
+            };
+
+            return bot.resolve(123, "kiwi", resolved);
+        });
+
+        it('uses configured topic resolution strategy', function(done) {
+            var calls = 0;
+            var mockTopicResolutionStrategy = function() {
+                const classifications = [];
+
+                this.collect = function(classification, classificationContext, callback) {
+                    calls++;
+                    classifications.push(classification);
+                    return callback();
+                };
+
+                this.resolve = function(callback) {
+                    calls++;
+                    var topics = [];
+
+                    classifications.forEach(function(classification) {
+                        topics.push({name: classification.label, confidence: classification.value});
+                    });
+
+                    return callback(undefined, topics);
+                };
+
+                return this;
+            };
+            var bot = new Bot({topicResolutionStrategy: mockTopicResolutionStrategy});
+            bot.resolve(1, 'something', function(err){
+                expect(calls).toBe(2);
+                done();
             });
         });
     });
