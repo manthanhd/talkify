@@ -4,6 +4,8 @@ pipeline {
     stage('Install Packages') {
       steps {
         tool(name: 'node-9', type: 'nodejs')
+        sh '''
+node -v'''
         sh 'npm install'
       }
     }
